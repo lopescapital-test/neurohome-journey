@@ -1,4 +1,4 @@
-# Build output. 2.9MB, regenerated wholesale on every run, and reproducible with
-# `node build.js` from the two repos. Committing it would put a churning binary-ish
-# blob in history for no gain.
-journey.html
+# Nothing ignored. journey.html is committed on purpose so the GitHub Pages link
+# opens the preview itself rather than the source of a build somebody has to run.
+# The cost is a 2.9MB file that changes wholesale on every rebuild; rebuild and
+# commit it whenever a source page changes, or the published copy goes stale.

@@ -35,13 +35,23 @@ SITE_DIR=/path/to/neurohome-landing node build.js
 
 The build fails with an explanation rather than a stack trace if it cannot find it.
 
+## Open it
+
+**https://lopescapital-test.github.io/neurohome-journey/journey.html**
+
+Nothing to install. It is one self-contained file: no server, no network, no build
+step to read it.
+
 ## Why this is separate from the site repo
 
-The site repo is public. This one is not, and the reason is in `sources/plans.html`:
-it carries labor rates, per-product COGS and gross margins. `sources/funnel.html`
-carries the qualification strategy. Neither belongs in a repository anyone can read.
+Separate because the site repo deploys to Vercel and this does not belong on the
+website. Both repos are public.
 
-`journey.html` is a build output and is not committed. Run the build to produce it.
+Be deliberate about who you send the link to. `sources/plans.html`, and the Plans
+tab of the preview built from it, carry labor rates, per-product COGS and gross
+margins. `sources/funnel.html` carries the qualification strategy. That is fine for
+anyone inside the company and a decision worth making on purpose for anyone outside
+it.
 
 ## What is here
 
