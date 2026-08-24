@@ -1,0 +1,4 @@
+# Build output. 2.9MB, regenerated wholesale on every run, and reproducible with
+# `node build.js` from the two repos. Committing it would put a churning binary-ish
+# blob in history for no gain.
+journey.html

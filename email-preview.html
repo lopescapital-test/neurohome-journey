@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>NeuroHome · The intake summary email</title>
+
+<!-- Internal reference, not a template. This shows the email that carries the
+     intake summary PDF: who it is from, what the family sees in their inbox, and
+     the copy itself.
+
+     Shown twice on purpose. The top copy is rendered with the same invented
+     family the journey preview uses, Maria and Leo, so it reads as a real inbox.
+     The bottom copy is the same email with the merge tags exposed, which is what
+     goes into GHL. Both come from one source below, so they cannot drift.
+
+     The attachment is the seven page summary built from intake-results.html. -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0E0E0E; --ink-2:#31312E; --ink-3:#6B6B68; --ink-4:#A1A1AA;
+    --bg:#F2F2F2; --card:#FFFFFF; --line:#E4E4E7;
+    --brand:#00CEFD; --brand-deep:#0095BD; --brand-text:#0A7A99; --brand-soft:#E6F8FE;
+    --navy:#0f1b33; --warn:#8A5A12; --warn-bg:#FEF0DA;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;
+    font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  :focus-visible{outline:2px solid var(--brand-deep);outline-offset:2px}
+  .wrap{max-width:820px;margin:0 auto;padding:0 clamp(16px,4vw,28px)}
+
+  .masthead{background:var(--navy);color:#fff;padding:22px 0}
+  .masthead h1{font-family:'Outfit',sans-serif;font-size:19px;font-weight:800;letter-spacing:-.4px}
+  .masthead p{color:#9FB3C8;font-size:13px;margin-top:3px}
+
+  main{padding:clamp(26px,4vw,40px) 0 70px}
+  .lede{font-size:15px;color:var(--ink-2);max-width:70ch;margin-bottom:26px}
+
+  .sec-label{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ink-3);margin:34px 0 12px}
+  .sec-label:first-of-type{margin-top:0}
+
+  /* ---- the inbox frame ---- */
+  .mail{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card);
+    box-shadow:0 1px 3px rgba(14,14,14,.05),0 10px 30px -18px rgba(14,14,14,.3)}
+  .mail-head{background:#F7F7F8;border-bottom:1px solid var(--line);padding:16px 22px}
+  .mail-subject{font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;
+    letter-spacing:-.35px;color:var(--ink);margin-bottom:12px}
+  .mail-row{display:grid;grid-template-columns:64px 1fr;gap:10px;font-size:13.5px;padding:2px 0}
+  .mail-row dt{color:var(--ink-3);font-weight:600}
+  .mail-row dd{color:var(--ink-2)}
+  .mail-row dd b{color:var(--ink);font-weight:600}
+  .mail-row dd span{color:var(--ink-3)}
+
+  /* ---- attachment chip ---- */
+  .attach{display:flex;align-items:center;gap:12px;margin-top:14px;padding:11px 14px;
+    background:var(--card);border:1px solid var(--line);border-radius:9px;max-width:400px}
+  .attach-ico{width:34px;height:34px;flex:none;border-radius:7px;background:#FDE3E8;color:#B3092A;
+    display:grid;place-items:center;font-size:9.5px;font-weight:800;letter-spacing:.04em}
+  .attach-name{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.3}
+  .attach-meta{font-size:12px;color:var(--ink-3);margin-top:1px}
+
+  /* ---- the email body itself ---- */
+  .mail-body{padding:30px clamp(22px,4vw,38px) 34px}
+  .brandline{display:flex;align-items:baseline;gap:9px;padding-bottom:20px;
+    border-bottom:1px solid var(--line);margin-bottom:24px}
+  .brandline .nm{font-family:'Outfit',sans-serif;font-size:19px;font-weight:800;letter-spacing:-.45px}
+  .brandline .nm span{color:var(--brand-deep)}
+  .brandline .tg{font-size:11.5px;color:var(--ink-3)}
+  .mail-body p{margin-bottom:15px;color:var(--ink-2);max-width:62ch}
+  .mail-body p:last-of-type{margin-bottom:0}
+  .mail-body .sign{margin-top:22px;color:var(--ink);font-weight:600}
+  .tag{background:var(--brand-soft);color:var(--brand-text);border-radius:4px;padding:1px 5px;
+    font-family:ui-monospace,"SF Mono",monospace;font-size:12.5px;font-weight:600;white-space:nowrap}
+
+  /* ---- notes ---- */
+  .note{border-radius:10px;padding:15px 18px;margin-top:14px;font-size:13.5px;line-height:1.6;
+    border-left:3px solid}
+  .note--warn{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
+  .note--info{background:var(--brand-soft);border-color:var(--brand-deep);color:#075A70}
+  .note b{font-weight:700}
+
+  table.fields{width:100%;border-collapse:collapse;margin-top:12px;background:var(--card);
+    border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13.5px}
+  table.fields th,table.fields td{padding:9px 14px;text-align:left;border-bottom:1px solid var(--line);
+    vertical-align:top}
+  table.fields tr:last-child th,table.fields tr:last-child td{border-bottom:0}
+  table.fields thead th{background:#F7F7F8;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink-3);font-weight:800}
+  table.fields td code{font-family:ui-monospace,"SF Mono",monospace;font-size:12.5px;color:var(--brand-text)}
+
+  .foot{color:var(--ink-4);font-size:12.5px;padding-top:26px;margin-top:34px;border-top:1px solid var(--line)}
+
+  @media (max-width:620px){
+    .mail-row{grid-template-columns:1fr;gap:0}
+    .mail-row dt{margin-top:6px}
+    /* An email address is one unbroken token, so the fields table pushed past the
+       viewport at 375 rather than wrapping. Scroll the table instead of letting it
+       widen the page, and let the addresses break where they have to. */
+    .fields-scroll{overflow-x:auto}
+    table.fields{min-width:430px}
+  }
+  .mail-row dd{overflow-wrap:anywhere}
+  table.fields td{overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="wrap">
+    <h1>The intake summary email</h1>
+    <p>What lands in a family's inbox with the seven page summary attached.</p>
+  </div>
+</div>
+
+<main class="wrap">
+  <p class="lede">Rendered below with the same invented family the journey preview uses, so it reads the
+    way a real one would. The merge tag version underneath is the copy that goes into the CRM. Both are
+    the same email.</p>
+
+  <div class="sec-label">As the family sees it</div>
+
+  <!-- STAGE EMAIL START. build.js lifts everything between this and
+       the matching END marker into journey.html's email stage, so this block is the
+       only copy of the family-facing email. Edit it here and the stage follows.
+       The markers are searched for from <body> onward, so mentioning them in the
+       head comment above would not shadow them. -->
+  <div class="mail">
+    <div class="mail-head">
+      <div class="mail-subject">Leo's intake summary</div>
+      <dl>
+        <div class="mail-row"><dt>From</dt><dd><b>NeuroHome</b> <span>&lt;hello@neurohome.com&gt;</span></dd></div>
+        <div class="mail-row"><dt>To</dt><dd>Maria Alvarez <span>&lt;maria.alvarez@example.com&gt;</span></dd></div>
+        <div class="mail-row"><dt>Date</dt><dd>21 August 2026</dd></div>
+      </dl>
+      <div class="attach">
+        <div class="attach-ico">PDF</div>
+        <div>
+          <div class="attach-name">Leo-intake-summary.pdf</div>
+          <div class="attach-meta">7 pages</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mail-body">
+      <div class="brandline">
+        <span class="nm">Neuro<span>Home</span></span>
+        <span class="tg">by NeuroSage Centers</span>
+      </div>
+      <p>Hi Maria,</p>
+      <p>Thank you for the time the intake took. We have read every answer.</p>
+      <p>The attached summary covers what you described, how we can help, the two programs we offer, and
+        what each costs. We have noted where we would start with Leo.</p>
+      <p>When you are ready, choose a plan or book a call with us. Both are on the last page. Nothing in
+        the summary is a diagnosis; that conversation happens when we speak.</p>
+      <p class="sign">The NeuroHome team</p>
+    </div>
+  </div>
+  <!-- STAGE EMAIL END -->
+
+  <div class="sec-label">The same email, with merge tags</div>
+
+  <div class="mail">
+    <div class="mail-head">
+      <div class="mail-subject"><span class="tag">{{childFirst}}</span>'s intake summary</div>
+      <dl>
+        <div class="mail-row"><dt>From</dt><dd><b>NeuroHome</b> <span>&lt;hello@neurohome.com&gt;</span></dd></div>
+        <div class="mail-row"><dt>To</dt><dd><span class="tag">{{parentFirst}}</span> <span class="tag">{{parentLast}}</span> <span class="tag">{{email}}</span></dd></div>
+        <div class="mail-row"><dt>Date</dt><dd>Send time</dd></div>
+      </dl>
+      <div class="attach">
+        <div class="attach-ico">PDF</div>
+        <div>
+          <div class="attach-name"><span class="tag">{{childFirst}}</span>-intake-summary.pdf</div>
+          <div class="attach-meta">7 pages</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mail-body">
+      <div class="brandline">
+        <span class="nm">Neuro<span>Home</span></span>
+        <span class="tg">by NeuroSage Centers</span>
+      </div>
+      <p>Hi <span class="tag">{{parentFirst}}</span>,</p>
+      <p>Thank you for the time the intake took. We have read every answer.</p>
+      <p>The attached summary covers what you described, how we can help, the two programs we offer, and
+        what each costs. We have noted where we would start with <span class="tag">{{childFirst}}</span>.</p>
+      <p>When you are ready, choose a plan or book a call with us. Both are on the last page. Nothing in
+        the summary is a diagnosis; that conversation happens when we speak.</p>
+      <p class="sign">The NeuroHome team</p>
+    </div>
+  </div>
+
+  <div class="sec-label">Merge fields used</div>
+
+  <div class="fields-scroll">
+  <table class="fields">
+    <thead><tr><th>Tag</th><th>Source</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><code>{{childFirst}}</code></td><td>Intake, screen 1</td><td>Leo</td></tr>
+      <tr><td><code>{{parentFirst}}</code></td><td>Intake, screen 1</td><td>Maria</td></tr>
+      <tr><td><code>{{parentLast}}</code></td><td>Intake, screen 1</td><td>Alvarez</td></tr>
+      <tr><td><code>{{email}}</code></td><td>Intake, screen 1</td><td>maria.alvarez@example.com</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note note--info">
+    <b>Four tags, all of them already collected.</b> Every one comes from screen 1 of the intake and is
+    already sent to the CRM as <code>child_first_name</code>, <code>parent_first_name</code>,
+    <code>parent_last_name</code> and <code>email</code>. Nothing new has to be captured to send this.
+  </div>
+
+  <div class="note note--warn">
+    <b>Two things this email deliberately does not do.</b> It names no clinician, because the copy is
+    signed by the team rather than a person, and it quotes no figure from the summary. The prices, the
+    weekly cost and the recommendation all live in the attachment, where the disclosures sit beside them.
+    Lifting a number into the email would separate it from the qualifying language.
+  </div>
+
+  <div class="foot">
+    Internal reference. The email copy here is the source of truth for what goes into the CRM template.
+    The attachment it describes is built from intake-results.html.
+  </div>
+</main>
+
+</body>
+</html>

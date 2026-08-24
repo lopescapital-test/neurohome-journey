@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroHome · Sales Cycle &amp; Team</title>
+<!-- SOURCE FILE for the journey preview's Funnel stage.
+     build.js extracts two spans from this file by marker, searching
+     from the body element onward: the brand bar, which ends where the page header
+     begins, and the funnel tab panel, which ends at the comment opening tab two.
+     Those markers are deliberately not spelled out literally here, because this
+     comment would then be the first thing the search matched.
+     Both markers exist in the original three-tab "Sales Cycle & Team" document, so you
+     can overwrite this whole file with that original and the build keeps working.
+
+     This copy carries the funnel tab verbatim EXCEPT the four Loom poster frames: the
+     originals embed large base64 JPEGs, which are not reproducible by hand. They use
+     the stylesheet's own .vid.placeholder treatment here instead. Overwrite this file
+     with the original and rebuild to get the photographs back. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cyan:#00C2FF; --cyan-deep:#0090C0; --neuro-blue:#16213E; --midnight:#101828;
+    --brand-ink:#1D2939; --slate:#667085;
+    --ink:#1D2939; --paper:#f4f7fa; --card:#ffffff; --line:#e2e8f0;
+    --sage:#0090C0; --sage-deep:#16213E; --clay:#e8833f; --gold:#c48a2a;
+    --mute:#667085; --cold:#a9b4c2;
+    --shadow:0 1px 0 rgba(22,33,62,.03), 0 10px 30px -16px rgba(22,33,62,.25);
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:'IBM Plex Sans',system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1240px;margin:0 auto;padding:0 40px}
+
+  /* ---- brand bar ---- */
+  .brandbar{background:var(--neuro-blue);padding:16px 0}
+  .nav-brand{display:flex;align-items:center;gap:14px;text-decoration:none;line-height:1.1}
+  .nav-brand-wordmark{display:flex;flex-direction:column;gap:2px}
+  .nav-brand-name{font-family:'Outfit',sans-serif;font-size:24px;font-weight:800;letter-spacing:-.6px;color:#fff}
+  .nav-brand-name span{color:var(--cyan)}
+  .nav-brand-tag{font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:500;color:#8593a8;letter-spacing:.4px}
+
+  .panel-body{display:none;padding:40px 0 70px}
+  .panel-body.active{display:block}
+
+  .legend{display:flex;flex-wrap:wrap;gap:10px 22px;margin:0 0 8px}
+  .legend span{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--mute)}
+  .chip{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+  .c-text{background:#3aa7d4} .c-email{background:var(--gold)} .c-loom{background:var(--clay)}
+  .c-gate{background:var(--neuro-blue)} .c-call{background:var(--clay)}
+
+  .phase{margin:40px 0 6px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .phase .n{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--sage);letter-spacing:.1em}
+  .phase h2{font-family:'Fraunces',serif;font-weight:500;font-size:26px;margin:0;letter-spacing:-.01em;color:var(--neuro-blue)}
+  .phase .sub{font-size:13.5px;color:var(--mute);width:100%;margin-top:2px}
+
+  .step{display:grid;grid-template-columns:74px 1fr;gap:20px;margin-top:20px}
+  .rail{display:flex;flex-direction:column;align-items:center;position:relative}
+  .day{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--sage-deep);
+    background:var(--paper);z-index:2;letter-spacing:.02em;text-align:center;line-height:1.3}
+  .node{width:14px;height:14px;border-radius:50%;background:var(--card);border:2px solid var(--cyan);margin:7px 0;z-index:2}
+  .rail .line{position:absolute;top:26px;bottom:-20px;width:2px;background:var(--line)}
+  .step:last-child .rail .line{display:none}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 20px;box-shadow:var(--shadow)}
+  .card .top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:7px}
+  .badge{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.09em;
+    text-transform:uppercase;padding:3px 9px;border-radius:5px;font-weight:500;color:#fff}
+  .b-text{background:#3aa7d4} .b-email{background:var(--gold)} .b-loom{background:var(--clay)}
+  .b-call{background:var(--clay)}
+  .from{font-size:12.5px;color:var(--mute)}
+  .card h3{font-family:'Fraunces',serif;font-weight:500;font-size:19px;margin:2px 0 6px;color:var(--neuro-blue)}
+  .card p{margin:0 0 10px;font-size:14.5px;color:#3a4757}
+  .card p:last-child{margin-bottom:0}
+  .script{padding:11px 14px;border-left:3px solid var(--cyan);background:#f0f9fe;
+    font-size:13.5px;color:var(--sage-deep);border-radius:0 6px 6px 0}
+  .script .lbl{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--mute);display:block;margin-bottom:5px}
+  .cta{margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--sage-deep);letter-spacing:.02em}
+  .cta::before{content:"CTA \2192 ";color:var(--sage)}
+  .why{margin-top:10px;font-size:12.5px;color:var(--mute);display:flex;gap:8px;font-style:italic}
+  .why::before{content:"\2197";font-style:normal;color:var(--sage);flex:0 0 auto}
+
+  .loom-embed{margin-top:12px;position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;border:1px solid var(--line);background:var(--neuro-blue)}
+  .loom-embed iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+  .loom-cap{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.04em;color:var(--mute);margin-top:7px}
+  .loom-cap a{color:var(--cyan-deep);text-decoration:none}
+
+  /* email preview */
+  .email-wrap{margin-top:12px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#eef1f5}
+  .email-chrome{background:#e2e8f0;padding:8px 14px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--slate);letter-spacing:.03em;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+  .email-body{background:#fff;margin:14px;border-radius:8px;padding:26px 30px;font-family:'IBM Plex Sans',sans-serif}
+  .email-logo{display:flex;align-items:center;justify-content:center;gap:11px;padding-bottom:20px;border-bottom:1px solid #eef1f5;margin-bottom:22px}
+  .email-logo .nm{font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.5px;color:var(--brand-ink)}
+  .email-logo .nm span{color:var(--cyan)}
+  .email-logo .tg{font-family:'IBM Plex Sans';font-size:9.5px;color:var(--slate);letter-spacing:.3px}
+  .email-body p{font-size:14px;color:#33414d;margin:0 0 14px;line-height:1.6}
+  .email-body .hl{background:#fff3a8;padding:0 2px;border-radius:2px}
+  .vid{position:relative;border-radius:8px;overflow:hidden;margin:6px 0 20px;background:var(--neuro-blue);aspect-ratio:16/9}
+  .vid img{display:block;width:100%;height:100%;object-fit:cover}
+  .vid .bar{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(16,24,40,.92));padding:22px 16px 12px;color:#fff}
+  .vid .bar .t{font-size:13px;font-weight:600}
+  .vid .bar .s{font-size:11px;color:#c5d0de;margin-top:2px}
+  .vid .play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center}
+  .vid .play::after{content:"";border-left:16px solid var(--neuro-blue);border-top:10px solid transparent;border-bottom:10px solid transparent;margin-left:4px}
+  .vid.placeholder{aspect-ratio:16/9;background:linear-gradient(135deg,var(--neuro-blue),#0d3b52);display:flex;align-items:center;justify-content:center}
+  .vid.placeholder .ph-mark{opacity:.5}
+  .diff{background:var(--neuro-blue);border-radius:10px;padding:22px 24px;margin:0 0 22px}
+  .diff .ey{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px}
+  .diff .ey .hl{background:#fff3a8;color:var(--brand-ink);padding:0 2px}
+  .diff h4{font-family:'Fraunces',serif;font-weight:500;font-size:22px;color:#fff;margin:0 0 10px}
+  .diff p{font-size:13px;color:#c5d0de;margin:0 0 16px;line-height:1.6}
+  .diff-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  @media(max-width:560px){.diff-stats{grid-template-columns:1fr 1fr}}
+  .diff-stat{background:rgba(255,255,255,.05);border-radius:7px;padding:12px 8px;text-align:center}
+  .diff-stat .n{font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:var(--cyan)}
+  .diff-stat .l{font-size:8px;letter-spacing:.05em;text-transform:uppercase;color:#8593a8;margin-top:5px;line-height:1.3}
+  .conn-ey{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan-deep);margin-bottom:4px}
+  .conn-h{font-family:'Fraunces',serif;font-weight:500;font-size:20px;color:var(--brand-ink);margin:0 0 12px}
+  .conn-item{border:1px solid #eef1f5;border-bottom:none;padding:13px 16px}
+  .conn-item:last-of-type{border-bottom:1px solid #eef1f5;border-radius:0 0 7px 7px}
+  .conn-item:first-of-type{border-radius:7px 7px 0 0}
+  .conn-item .t{font-size:13.5px;font-weight:600;color:var(--brand-ink);margin-bottom:3px}
+  .conn-item .d{font-size:12px;color:#5a6673;line-height:1.5}
+  .refine{background:#eef7fc;border-left:3px solid var(--cyan);border-radius:0 7px 7px 0;padding:14px 16px;margin:20px 0}
+  .refine .t{font-size:13px;font-weight:600;color:var(--sage-deep);margin-bottom:4px}
+  .refine .d{font-size:12px;color:#3a4757;line-height:1.55}
+  .email-cta{display:block;text-align:center;background:var(--neuro-blue);color:#fff;font-weight:600;font-size:14px;padding:14px;border-radius:8px;text-decoration:none;margin:22px auto 8px;max-width:320px}
+  .email-cta .hl{background:#fff3a8;color:var(--brand-ink);padding:0 3px;border-radius:2px}
+  .email-cta-sub{text-align:center;font-size:11.5px;color:#8593a8;margin:0 0 20px}
+  .email-sig{font-size:13.5px;color:#33414d;margin-top:6px}
+  .email-sig b{color:var(--brand-ink)}
+  .email-fine{font-size:10.5px;color:#a0aab6;line-height:1.5;margin-top:14px;padding-top:14px;border-top:1px solid #eef1f5}
+  .email-foot{text-align:center;font-size:10.5px;color:#8593a8;padding:6px 0 16px}
+  .email-foot .hl{background:#fff3a8;color:var(--brand-ink);padding:0 2px;border-radius:2px}
+
+  .gate{margin:40px 0 4px;padding:24px 26px;border-radius:var(--radius);background:var(--neuro-blue);color:#eef3ee;box-shadow:var(--shadow)}
+  .gate .k{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin:0 0 8px}
+  .gate h2{font-family:'Fraunces',serif;font-weight:500;font-size:26px;margin:0 0 10px;color:#fff}
+  .gate p{margin:0 0 8px;font-size:14.5px;color:#c5d0de;max-width:none}
+  .gate p:last-child{margin-bottom:0}
+  .gate .split{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  @media(max-width:640px){.gate .split{grid-template-columns:1fr}}
+  .gate .lane{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:14px 16px}
+  .gate .lane h4{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px}
+  .lane-pass h4{color:#7fe0ff} .lane-fail h4{color:#e0b09f}
+  .gate .lane p{font-size:13px;color:#c5d0de;margin:0}
+
+  @media(max-width:720px){.wrap{padding:0 20px}.step{grid-template-columns:56px 1fr;gap:14px}}
+</style>
+</head>
+<body>
+
+<div class="brandbar">
+  <div class="wrap">
+    <a class="nav-brand" href="#" aria-label="NeuroHome by NeuroSage Centers">
+      <svg width="42" height="42" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="8" y="22" width="36" height="27" rx="3" stroke="#FFFFFF" stroke-width="2.2" fill="none"/>
+        <path d="M 4 24 L 26 5 L 48 24" stroke="#FFFFFF" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="20" y="34" width="12" height="15" rx="1.5" stroke="#FFFFFF" stroke-width="1.5" fill="rgba(0,194,255,0.1)"/>
+        <circle cx="8" cy="22" r="3" fill="#00C2FF"/><circle cx="44" cy="22" r="3" fill="#00C2FF"/>
+        <circle cx="8" cy="49" r="3" fill="#00C2FF"/><circle cx="44" cy="49" r="3" fill="#00C2FF"/>
+        <circle cx="26" cy="5" r="3" fill="#00C2FF"/>
+      </svg>
+      <span class="nav-brand-wordmark">
+        <span class="nav-brand-name">Neuro<span>Home</span></span>
+        <span class="nav-brand-tag">by NeuroSage Centers</span>
+      </span>
+    </a>
+  </div>
+</div>
+
+<header>
+</header>
+
+<!-- ============ TAB 1 · FUNNEL ============ -->
+<div class="panel-body" id="tab-funnel" role="tabpanel" aria-labelledby="t1">
+<div class="wrap">
+  <div class="legend">
+    <span><i class="chip c-text"></i>Text · advocate voice</span>
+    <span><i class="chip c-loom"></i>Family Loom (evergreen)</span>
+    <span><i class="chip c-email"></i>Email</span>
+    <span><i class="chip c-gate"></i>Intake gate</span>
+    <span><i class="chip c-call"></i>Call</span>
+  </div>
+
+  <div class="gate">
+    <p class="k">Gate #1 · The intake · 121 questions · ~20 minutes</p>
+    <h2>The intake form is the qualifier.</h2>
+    <p>Everything in this funnel exists to drive one action: completing the intake. By design it's heavy: a parent who won't invest 20 minutes and 121 questions is not close to a $5&ndash;13k decision. Completion is the filter that separates the leads worth human time and a personalized close from the ones who exit to nurture. Nothing past this gate fires without it.</p>
+    <div class="split">
+      <div class="lane lane-pass"><h4>&#10003; Intake completed &rarr; The Plan</h4>
+        <p>Holding message &rarr; tailored plan + kit + team + price &rarr; two-button close. The human layer opens (see the <b>The Plan</b> tab).</p></div>
+      <div class="lane lane-fail"><h4>&times; Never completed &rarr; exit</h4>
+        <p>No call, no price, no individual attention. Drop to monthly nurture; re-enter anytime if they complete it later.</p></div>
+    </div>
+  </div>
+
+  <div class="phase"><span class="n">ENTRY</span><h2>The lead comes in</h2>
+    <span class="sub">Instagram · Facebook · website · manual ad &rarr; one web capture box.</span></div>
+  <div class="step">
+    <div class="rail"><span class="day">T-0</span><span class="node"></span><span class="line"></span></div>
+    <div class="card">
+      <div class="top"><span class="badge b-email">Lead form</span><span class="from">Any channel</span></div>
+      <h3>"Interested in learning more?"</h3>
+      <p>Captures the five fields that qualify and route: <b>email, name, phone, child's age</b> (fit our requirements), and <b>country</b> (can we service it). Age and country are hard gates &mdash; a lead outside them never enters the sequence.</p>
+      <p class="why">This is the only data the top-of-funnel runs on. The full intake comes later, and it's the pivot &mdash; not the front door.</p>
+    </div>
+  </div>
+
+  <div class="phase"><span class="n">PHASE 1 · NURTURE</span><h2>Build trust, drive the intake</h2>
+    <span class="sub">Runs for every qualified lead. Price is present as a <b>fact</b>, never as a <b>number</b>. Every touch's CTA points at the intake form.</span></div>
+
+  <div class="step">
+    <div class="rail"><span class="day">Day 1</span><span class="node"></span><span class="line"></span></div>
+    <div class="card">
+      <div class="top"><span class="badge b-email">Email 1 · live copy</span><span class="from">Jake &mdash; Family Advocate</span></div>
+      <h3>The family story</h3>
+      <p>The actual Email 1 as it ships &mdash; claim-safe copy (hedged "up to" quantities, "no specific outcome is guaranteed" footer) wrapping the evergreen family Loom. CTA drives to <b>Compare Programs</b>, and the signature is <b>Family Advocate</b>.</p>
+
+      <div class="email-wrap">
+        <div class="email-chrome"><span>From: Jake · NeuroHome</span><span>Subject: A personal message about your family</span></div>
+        <div class="email-body">
+          <div class="email-logo">
+            <svg width="34" height="34" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="8" y="22" width="36" height="27" rx="3" stroke="#1D2939" stroke-width="2.2" fill="none"/>
+              <path d="M 4 24 L 26 5 L 48 24" stroke="#1D2939" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="20" y="34" width="12" height="15" rx="1.5" stroke="#1D2939" stroke-width="1.5" fill="rgba(0,194,255,0.06)"/>
+              <circle cx="8" cy="22" r="3" fill="#00C2FF"/><circle cx="44" cy="22" r="3" fill="#00C2FF"/>
+              <circle cx="8" cy="49" r="3" fill="#00C2FF"/><circle cx="44" cy="49" r="3" fill="#00C2FF"/><circle cx="26" cy="5" r="3" fill="#00C2FF"/>
+            </svg>
+            <span><span class="nm">Neuro<span>Home</span></span><br><span class="tg">by NeuroSage Centers</span></span>
+          </div>
+
+          <p>Hi Maria,</p>
+          <p>I'm Jake. Today I help families at NeuroHome, but a few years ago I was simply a dad searching for answers for my own son. I recorded a short message about our family's experience. Please start there.</p>
+
+          <div class="vid placeholder" id="loomPoster" role="button" tabindex="0" aria-label="Play: A personal message from Jake">
+            <span class="ph-mark">
+              <svg width="56" height="56" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="8" y="22" width="36" height="27" rx="3" stroke="#FFFFFF" stroke-width="2.2" fill="none"/>
+                <path d="M 4 24 L 26 5 L 48 24" stroke="#FFFFFF" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="8" cy="22" r="3" fill="#00C2FF"/><circle cx="44" cy="22" r="3" fill="#00C2FF"/>
+                <circle cx="8" cy="49" r="3" fill="#00C2FF"/><circle cx="44" cy="49" r="3" fill="#00C2FF"/><circle cx="26" cy="5" r="3" fill="#00C2FF"/>
+              </svg>
+            </span>
+            <div class="play" aria-hidden="true"></div>
+            <div class="bar"><div class="t">A personal message from Jake</div><div class="s">&#9654; Watch now · about 3 minutes</div></div>
+          </div>
+          <div class="loom-cap"><a href="https://www.loom.com/share/23e3a08de7b44ef68cbbe8cb45124d5b" target="_blank" rel="noopener">open in Loom &#8599;</a></div>
+
+          <div class="diff" style="margin-top:20px">
+            <div class="ey">The NeuroHome difference</div>
+            <h4>Dr. Kyle's clinic, brought home.</h4>
+            <p>Not a course, and not a box of devices. It's an eight-week home intensive where a dedicated care team guides your family through the core elements of Dr. Kyle's clinical model, adapted for your home.</p>
+            <div class="diff-stats">
+              <div class="diff-stat"><div class="n">Up to 9</div><div class="l">Home therapy tools</div></div>
+              <div class="diff-stat"><div class="n">Up to 2</div><div class="l">Functional lab panels</div></div>
+              <div class="diff-stat"><div class="n">2 months</div><div class="l">Nutritional support</div></div>
+              <div class="diff-stat"><div class="n">Up to 73h</div><div class="l">Family therapy support</div></div>
+            </div>
+          </div>
+
+          <div class="conn-ey">One connected program</div>
+          <div class="conn-h">Everything works together.</div>
+          <div class="conn-item"><div class="t">Home therapy technology</div><div class="d">Program-selected light, stimulation, sensory, acupressure, vibration, and digital tools used within a guided home protocol.</div></div>
+          <div class="conn-item"><div class="t">Functional testing and nutritional support</div><div class="d">Available laboratory panels and two months of nutritional support add context as the care team refines recommendations.</div></div>
+          <div class="conn-item"><div class="t">A team beside your family</div><div class="d">Depending on the program, support may include concierge-led family therapy, live OT/PT sessions, clinician review, and ongoing guidance.</div></div>
+
+          <div class="refine"><div class="t">Your child's plan is refined throughout the intensive.</div><div class="d">Your family begins with a clear framework, and the plan does not stay static. Week over week, the care team observes your child's responses, reviews your feedback, and factors in available laboratory information to keep adjusting recommendations as the program progresses.</div></div>
+
+          <a class="email-cta" href="#">Compare NeuroHome Programs</a>
+          <p class="email-cta-sub">Review the equipment, testing, nutritional support,<br>service hours, and pricing included with each option.</p>
+
+          <p class="email-sig">I know how important this decision is. Whatever you choose, I'm rooting for your family.<br><br><b>Jake</b><br>NeuroHome Family Advocate</p>
+          <div class="email-fine">Exact equipment, laboratory panels, nutritional products, support hours, and clinical involvement vary by program option. The comparison page identifies each inclusion. Every child responds differently, and no specific outcome is guaranteed.</div>
+        </div>
+        <div class="email-foot">NeuroHome · Lake Charles, LA · You're receiving this because you completed an intake.</div>
+      </div>
+      <div class="cta">Watch the Loom, then start the intake form.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="rail"><span class="day">Day 2</span><span class="node"></span><span class="line"></span></div>
+    <div class="card">
+      <div class="top"><span class="badge b-text">Text</span><span class="from">Jake &mdash; "Zach's dad"</span></div>
+      <h3>Real person on the other end</h3>
+      <p>References Day 1 directly. This touch does one job: prove a human is here. No pitch, no price, no ask beyond "let me know if you have questions."</p>
+      <div class="script"><span class="lbl">Message</span>"Hey, this is Jake &mdash; Zach's dad. I sent you a Loom yesterday. Hope you got a chance to watch it. Let me know if you have any questions &mdash; I'm here."</div>
+      <div class="cta">Reply / ask anything (earliest engagement signal).</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="rail"><span class="day">Day 3</span><span class="node"></span><span class="line"></span></div>
+    <div class="card">
+      <div class="top"><span class="badge b-loom">Email · Loom</span><span class="from">Mechanism</span></div>
+      <h3>What's underneath the surface</h3>
+      <p>The mechanism video. Behavioral therapy and ABA can only do so much for a child who isn't regulated. NeuroHome's process: test labs for what's underneath &rarr; regulate the child (photobiomodulation + supplements to start repairing inflammation) &rarr; once regulated, learning happens and therapy gains follow.</p>
+      <div class="vid placeholder" id="loomPoster2" role="button" tabindex="0" aria-label="Play: Our Aha Moment - Mold Discovery">
+        <span class="ph-mark">
+          <svg width="56" height="56" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="8" y="22" width="36" height="27" rx="3" stroke="#FFFFFF" stroke-width="2.2" fill="none"/>
+            <path d="M 4 24 L 26 5 L 48 24" stroke="#FFFFFF" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="8" cy="22" r="3" fill="#00C2FF"/><circle cx="44" cy="22" r="3" fill="#00C2FF"/>
+            <circle cx="8" cy="49" r="3" fill="#00C2FF"/><circle cx="44" cy="49" r="3" fill="#00C2FF"/><circle cx="26" cy="5" r="3" fill="#00C2FF"/>
+          </svg>
+        </span>
+        <div class="play" aria-hidden="true"></div>
+        <div class="bar"><div class="t">Our Aha Moment - Mold Discovery</div><div class="s">&#9654; Watch now · Loom 2</div></div>
+      </div>
+      <div class="loom-cap"><a href="https://www.loom.com/share/69e52c1bdf3e4213a02395d5ba3556a0" target="_blank" rel="noopener">open in Loom &#8599;</a></div>
+      <div class="cta">Start the intake so the team can see what's going on for your child.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="rail"><span class="day">Day 5</span><span class="node"></span><span class="line"></span></div>
+    <div class="card">
+      <div class="top"><span class="badge b-loom">Email · Loom</span><span class="from">Parent &mdash; empowerment</span></div>
+      <h3>"I became my kid's therapist"</h3>
+      <p>Evergreen family Loom on the model's real differentiator: clinic-level tools come to your home, so you stop driving across the city to ABA, OT, and PT. Much of the therapy happens at home, with the tools to do it &mdash; and you can help your child in the moment they most need it.</p>
+      <div class="vid placeholder" id="loomPoster3" role="button" tabindex="0" aria-label="Play: Dr. Kyle's Clinic Comes To Your Home">
+        <span class="ph-mark">
+          <svg width="56" height="56" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="8" y="22" width="36" height="27" rx="3" stroke="#FFFFFF" stroke-width="2.2" fill="none"/>
+            <path d="M 4 24 L 26 5 L 48 24" stroke="#FFFFFF" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="8" cy="22" r="3" fill="#00C2FF"/><circle cx="44" cy="22" r="3" fill="#00C2FF"/>
+            <circle cx="8" cy="49" r="3" fill="#00C2FF"/><circle cx="44" cy="49" r="3" fill="#00C2FF"/><circle cx="26" cy="5" r="3" fill="#00C2FF"/>
+          </svg>
+        </span>
+        <div class="play" aria-hidden="true"></div>
+        <div class="bar"><div class="t">Dr. Kyle's Clinic Comes To Your Home</div><div class="s">&#9654; Watch now &middot; Loom 3</div></div>
+      </div>
+      <div class="loom-cap"><a href="https://www.loom.com/share/f0efb517730644749e6aecca8203fffe" target="_blank" rel="noopener">open in Loom &#8599;</a></div>
+      <div class="cta">Start the intake to see what your child's plan would look like.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="rail"><span class="day">Day 7</span><span class="node"></span><span class="line"></span></div>
+    <div class="card">
+      <div class="top"><span class="badge b-text">Text</span><span class="from">Jake / advocate</span></div>
+      <h3>Intent check + intake push</h3>
+      <p>By now they've seen three videos &mdash; another "here are more Looms" is redundant. This touch names the one action that matters and offers the human door.</p>
+      <div class="script"><span class="lbl">Message</span>"You've seen a lot from us about how NeuroHome has helped my family. The next step is the intake &mdash; it's how we understand your child. Any questions, I'm right here."</div>
+      <div class="cta">Complete the intake form.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="rail"><span class="day">Day 10</span><span class="node"></span><span class="line"></span></div>
+    <div class="card">
+      <div class="top"><span class="badge b-email">Email</span><span class="from">Jake &mdash; the last plea</span></div>
+      <h3>The final email</h3>
+      <p>Warm close on the nurture track. No pressure, one last door.</p>
+      <div class="vid placeholder" id="loomPoster4" role="button" tabindex="0" aria-label="Play: Our Child's Growth">
+        <span class="ph-mark">
+          <svg width="56" height="56" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="8" y="22" width="36" height="27" rx="3" stroke="#FFFFFF" stroke-width="2.2" fill="none"/>
+            <path d="M 4 24 L 26 5 L 48 24" stroke="#FFFFFF" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="8" cy="22" r="3" fill="#00C2FF"/><circle cx="44" cy="22" r="3" fill="#00C2FF"/>
+            <circle cx="8" cy="49" r="3" fill="#00C2FF"/><circle cx="44" cy="49" r="3" fill="#00C2FF"/><circle cx="26" cy="5" r="3" fill="#00C2FF"/>
+          </svg>
+        </span>
+        <div class="play" aria-hidden="true"></div>
+        <div class="bar"><div class="t">Our Child's Growth</div><div class="s">&#9654; Watch now &middot; Loom 4 (final)</div></div>
+      </div>
+      <div class="loom-cap"><a href="https://www.loom.com/share/06d1a1fe932940a38b407a7bdf7adec1" target="_blank" rel="noopener">open in Loom &#8599;</a></div>
+      <div class="script"><span class="lbl">Message</span>"This is my last email &mdash; you won't keep hearing from me. I just wanted to share that this family, Dr. Kyle, and this program changed my family's life. My son improved in ways I never thought possible. If there's ever anything we can do for you, we're here. And if not &mdash; God bless you and your family on this journey."</div>
+      <div class="cta">Complete the intake &mdash; or exit to monthly nurture.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 2 · TEAM & COMP ============ -->
+</body>
+</html>

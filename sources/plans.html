@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>NeuroHome · Plans · v5.0.0</title>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SHELL CONTRACT. This file is embedded in journey.html as the tpl-plans
+     template and rendered into iframe#plans. The shell draws its own tab rail
+     and drives this document's tabs by reaching into the frame and clicking
+     them. The consumer is wirePlanTabs() in build.js.
+
+     Seven things below are load-bearing. Each one, and what breaks:
+
+     1. role="tab" on all four tabs.
+        Found by querySelectorAll('[role="tab"][aria-controls^="panel-"]').
+        Remove it and the rail gives up, showing "Use the tabs inside the page".
+
+     2. aria-controls values prefixed "panel-".
+        Same selector. Rename the panels and the rail gives up the same way.
+
+     3. All four tabs share one parent element.
+        The shell hides that parent via inner[0].parentNode. Split them across
+        two containers and this document's own tab strip stays visible, so the
+        reader gets two competing tab rails.
+
+     4. The tab label is bare TEXT NODES, and it comes FIRST.  <-- not obvious
+        nameOf() walks childNodes while nodeType === 3 and stops at the first
+        element. Wrapping the label in a <span> blanks the pill in the rail.
+        Write:   <button ...>Overview<span class="tab-meta">…</span></button>
+        Not:     <button ...><span>Overview</span><span…
+
+     5. The meta value is the tab's FIRST ELEMENT CHILD.  <-- not obvious
+        subOf() reads t.firstElementChild.textContent to fill the shell's
+        #plans-note. Move .tab-meta after another element, or insert any
+        element ahead of it, and that readout goes empty. It is why the figures
+        in .tab-meta ($13,000 · 57.5%, Not cleared) cannot be restructured.
+
+     6. Activation is a click on the tab element itself.
+        The shell calls inner[i].click() and relies on this document's own
+        [role="tab"] handler to switch panels. Replace that handler with
+        something driven by another event and the rail goes inert.
+
+     7. DOM order of the four tabs.
+        The shell maps them to data-plan="0..3" by index, so DOM order sets the
+        pill order and the numbers in the rail.
+
+     Everything else here — layout, type, colour, table structure — is free.
+     ══════════════════════════════════════════════════════════════════════════ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAFAFA; --warm:#F2F2F2; --card:#FFFFFF; --dark:#0E0E0E; --dark-2:#1A1A1A;
+  --line:rgba(14,14,14,0.08); --line-2:rgba(14,14,14,0.16);
+  --text:#0E0E0E; --text-2:#31312E; --text-3:#6B6B68; --inv:#FAFAFA;
+  --brand:#00CEFD; --brand-light:#E6F8FE; --brand-deep:#0099C2; --brand-text:#0A7A99;
+  --glow:rgba(0,206,253,0.18);
+  --navy:#16294a; --navy-light:#EEF2F9; --navy-line:rgba(22,41,74,0.18);
+  --purple:#6B5BD2; --purple-light:#F0EEFB; --purple-line:rgba(107,91,210,0.22);
+  --grey:#8B8B88; --grey-light:#F2F2F2;
+  --ok:#0A6B3D; --ok-bg:#EFFBF4; --ok-line:rgba(11,218,81,.32);
+  /* --warn AA ratios, measured: #FEF0DA 5.26, .pivot 5.26, #FFFAF0 5.68,
+     #F1F3F5 5.32. Was #B07520 at 3.45. Same value as the shell's --warn, so a
+     future divergence reads as a divergence. */
+  --warn:#8A5A12; --warn-bg:#FEF0DA; --warn-line:#E8C88A;
+  --stop:#B3092A; --stop-bg:#FEF0F2; --stop-line:#F6BFC9;
+  --cta:linear-gradient(135deg,#16294a 0%,#0a0f1c 100%);
+  --r:20px; --r-sm:12px; --r-lg:28px; --pill:100px;
+  --sh-sm:0 1px 3px rgba(14,14,14,.04),0 1px 2px rgba(14,14,14,.02);
+  --sh-md:0 6px 24px rgba(14,14,14,.06),0 2px 6px rgba(14,14,14,.03);
+  /* --y between sections, --y-in within one. */
+  --y:clamp(46px,5.5vw,72px); --y-in:clamp(22px,2.4vw,32px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  font-feature-settings:'cv11','ss01','ss03';font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--brand-deep);outline-offset:3px;border-radius:3px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+
+/* ─── masthead ─── */
+.masthead{background:#0f1b33;color:#fff;padding:22px 0 20px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 clamp(18px,3.4vw,40px)}
+.mark{font-family:'Outfit',sans-serif;font-size:21px;font-weight:800;letter-spacing:-.4px}
+.mark b{color:var(--brand);font-weight:800}
+.basis{color:#9FB3C8;font-size:13px;margin-top:3px}
+
+/* ─── tabs ─── */
+.tabs{background:#0f1b33;padding-bottom:20px}
+.tabs .wrap{display:flex;gap:8px;flex-wrap:wrap}
+.tab{background:rgba(255,255,255,.06);color:#C9D6E4;border:1px solid rgba(255,255,255,.16);
+  border-radius:var(--pill);padding:9px 20px;font:inherit;font-size:13.5px;font-weight:600;
+  cursor:pointer;text-align:left;line-height:1.25;transition:border-color .2s,color .2s,background .2s}
+.tab:hover{border-color:var(--brand);color:#fff}
+.tab-meta{display:block;font-size:10.5px;font-weight:600;letter-spacing:.04em;
+  color:rgba(201,214,228,.72);margin-top:2px}
+.tab[aria-selected="true"]{background:var(--brand);border-color:var(--brand);color:#04212B}
+.tab[aria-selected="true"] .tab-meta{color:rgba(4,33,43,.72)}
+[role="tabpanel"][hidden]{display:none}
+main{max-width:1240px;margin:0 auto;padding:clamp(30px,3.6vw,48px) clamp(18px,3.4vw,40px) 88px}
+
+/* ─── type ─── */
+.opener{padding-bottom:26px;border-bottom:1px solid var(--line);margin-bottom:30px}
+.eyebrow{font-size:13px;font-weight:500;letter-spacing:.3px;color:var(--text-2);
+  margin-bottom:14px;display:inline-flex;align-items:center;gap:10px}
+.eyebrow::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--brand);
+  box-shadow:0 0 0 4px var(--glow);flex-shrink:0}
+.eyebrow.nv::before{background:var(--navy);box-shadow:0 0 0 4px rgba(22,41,74,.13)}
+.eyebrow.pu::before{background:var(--purple);box-shadow:0 0 0 4px rgba(107,91,210,.16)}
+h1{font-family:'Outfit',sans-serif;font-size:clamp(30px,4.2vw,50px);font-weight:800;
+  letter-spacing:-1.6px;line-height:1.03;margin-bottom:14px}
+h1 em{font-style:normal;color:var(--brand)}
+h1 .nv{color:var(--navy)} h1 .pu{color:var(--purple)}
+.standfirst{font-size:17px;color:var(--text-2);line-height:1.66;max-width:82ch}
+.standfirst strong{color:var(--text);font-weight:600}
+/* Scale: h2 26 section / 22 panel, h3 16, micro-label 11 Inter uppercase. */
+h2{font-family:'Outfit',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.8px;
+  line-height:1.12;margin:0 0 10px}
+h3{font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;letter-spacing:-.3px;margin:22px 0 8px}
+p{color:var(--text-2);line-height:1.66;margin-bottom:12px;max-width:84ch}
+strong{color:var(--text);font-weight:600}
+.block{margin:0 0 var(--y)}
+.block>h2{margin-top:0}
+.block>h3{margin-top:var(--y-in)}
+.block>h3:first-child{margin-top:0}
+.block>.grid+h2,.block>.grid+h3,.block>.note+h2,.block>.note+h3{margin-top:var(--y-in)}
+.block:last-child{margin-bottom:0}
+
+/* ─── plan cards ─── */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:0 0 32px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:28px 30px;box-shadow:var(--sh-md);position:relative;overflow:hidden}
+.card::after{content:'';position:absolute;inset:0 0 auto 0;height:4px}
+.card.cl::after{background:var(--navy)}
+.card.we::after{background:var(--brand)}
+.card.rv::after{background:var(--purple)}
+.badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  padding:5px 12px;border-radius:var(--pill);margin-bottom:12px}
+.card.cl .badge{background:var(--navy-light);color:var(--navy)}
+.card.we .badge{background:var(--brand-light);color:var(--brand-text)}
+.card.rv .badge{background:var(--purple-light);color:var(--purple)}
+.card h2{font-size:22px;margin-bottom:8px}
+.card .line{font-size:15px;color:var(--text-2);line-height:1.5;padding-bottom:18px;
+  margin-bottom:18px;border-bottom:1px solid var(--line)}
+/* Shared track so the three cards line their figures up as one row. */
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:14px 28px}
+.figs>div{min-width:0}
+.fig-k{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:5px}
+.fig-v{font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.fig-v.lead{font-size:33px;letter-spacing:-1.3px}
+.card.cl .fig-v.lead{color:var(--navy)}
+.card.we .fig-v.lead{color:var(--brand-text)}
+.card.rv .fig-v.lead{color:var(--purple)}
+
+/* ─── tables ─── */
+.grid{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;table-layout:fixed;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.grid th,.grid td{padding:10px 15px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.grid thead th{background:var(--warm);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  font-weight:800;color:var(--text-3)}
+.grid .num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+/* Right-alignment stays on .num: a <col> carries only width, background,
+   border and visibility, never text-align. */
+.grid th:first-child,.grid td:first-child{width:29%}
+.grid .vault td:first-child,.grid .band td:first-child{width:auto}
+
+/* Required, and invisible from source: these are grid containers, and a grid
+   item defaults to min-width:auto, taking the table min-content as its own. That
+   escapes the scroll wrapper and drags the unwrapped sibling tables wide, so the
+   document overflows. The item is the unclassed <div> ABOVE the wrapper, so
+   zeroing the wrapper alone does not fix it. */
+.split>*,.split--wide>*,.duo>*,.cards>*{min-width:0}
+.grid-scroll{overflow-x:auto;margin:14px 0;min-width:0;max-width:100%;
+  -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 26px),transparent);
+  mask-image:linear-gradient(to right,#000 calc(100% - 26px),transparent)}
+.grid-scroll>.grid{margin:0}
+/* Both numbers measured across all 12 grids, not chosen: clipping first appears
+   at 590px viewport (0 clipped at 600), and 560px is the smallest floor giving
+   0 clipped at 390px. 580 adds headroom for font fallback. */
+@media (max-width:590px){
+  .grid-scroll>.grid{min-width:580px}
+}
+@media (min-width:820px){
+  .grid-scroll{-webkit-mask-image:none;mask-image:none}
+}
+.grid small{display:block;color:var(--text-3);font-size:11.5px;font-weight:400;margin-top:2px;line-height:1.42}
+.grid .key{background:var(--bg);font-weight:600;color:var(--text)}
+.grid .band td{background:var(--bg);padding:7px 15px;font-size:10.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--text-3);font-weight:800;border-top:1px solid var(--line-2)}
+.grid .vault td{background:var(--dark);color:var(--brand);padding:10px 15px;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase;font-weight:800}
+/* Internal cost rows. This marking may only get stronger, never subtler. */
+.grid .cost td{background:#F1F3F5}
+/* th, not td: all 14 label cells are <th class="key">, so a td-only rule
+   matches nothing. */
+.grid .cost td.key,.grid .cost th.key{background:#EFF1F3;border-left:3px solid var(--dark)}
+.grid .rule td{background:var(--warm);font-weight:800;border-top:2px solid var(--text)}
+.grid .result td{background:var(--navy-light);font-weight:800;color:var(--navy);
+  font-family:'Outfit',sans-serif;font-size:19px;letter-spacing:-.6px}
+.grid .result td.key{font-family:'Inter',sans-serif;font-size:13.5px;color:var(--text)}
+.grid .pivot td{background:var(--warn-bg);color:var(--warn);font-weight:700}
+.grid .flagged td{background:#FFFAF0;color:var(--warn)}
+.grid .flagged td.key{background:var(--warn-bg);color:var(--warn)}
+.grid .halted td{background:var(--stop-bg);color:var(--stop)}
+.grid .halted td.key{background:#FDE3E8;color:var(--stop)}
+.yes{color:var(--ok);font-weight:700}
+.none{color:var(--text-3)}
+.mono{font-variant-numeric:tabular-nums;font-weight:600}
+
+.grid thead th.plan-head{background:var(--warm);padding:16px 15px;vertical-align:bottom;
+  text-transform:none;letter-spacing:normal;font-size:15px;font-weight:400;color:var(--text);
+  font-family:'Inter',sans-serif}
+.plan-head .role{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;margin-bottom:4px}
+.plan-head .name{font-family:'Outfit',sans-serif;font-size:19px;font-weight:800;
+  letter-spacing:-.5px;line-height:1.12;color:var(--text)}
+.plan-head .price{font-family:'Outfit',sans-serif;font-size:27px;font-weight:800;
+  letter-spacing:-1.1px;line-height:1.05;margin-top:5px}
+.plan-head .term{font-size:10.5px;color:var(--text-3);margin-top:3px;font-weight:500}
+.plan-head.cl{border-top:4px solid var(--navy)}
+.plan-head.cl .role,.plan-head.cl .price{color:var(--navy)}
+.plan-head.we{border-top:4px solid var(--brand)}
+.plan-head.we .role,.plan-head.we .price{color:var(--brand-text)}
+.plan-head.rv{border-top:4px solid var(--purple)}
+.plan-head.rv .role,.plan-head.rv .price{color:var(--purple)}
+.plan-head.lg{border-top:4px solid var(--grey)}
+.plan-head.lg .role,.plan-head.lg .price{color:var(--grey)}
+
+/* ─── notes ─── */
+.note{border-radius:var(--r-sm);padding:16px 20px;margin:14px 0;font-size:13.5px;line-height:1.6}
+.note p{color:inherit;margin:0 0 9px;max-width:none}
+.note p:last-child{margin-bottom:0}
+.note ul{margin:9px 0 0 20px}
+.note li{margin-bottom:6px}
+.note--info{background:var(--brand-light);border:1px solid rgba(0,206,253,.32);color:#075A70}
+.note--warn{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn)}
+.note--ok{background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok)}
+.note--stop{background:var(--stop-bg);border:1px solid var(--stop-line);color:var(--stop)}
+/* Severity rule. These may become more prominent, never less. */
+.note--warn{border-left:3px solid var(--warn)}
+.note--stop{border-left:3px solid var(--stop)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0;align-items:start}
+.duo>.note{margin:0}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin:16px 0;align-items:start}
+.split--wide{grid-template-columns:1.08fr 1fr}
+.marks{margin:6px 0 0 0;list-style:none}
+.marks li{margin-bottom:7px;color:var(--text-2);font-size:14.5px;line-height:1.5;
+  padding-left:22px;position:relative}
+.marks li strong{color:var(--text)}
+.marks li::before{content:'';position:absolute;left:0;top:9px;width:10px;height:2px;
+  border-radius:2px;background:var(--brand)}
+.chip{display:inline-block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  font-weight:800;color:#fff;padding:3px 8px;border-radius:var(--pill);margin-right:7px;vertical-align:1px}
+.chip--stop{background:var(--stop)} .chip--flag{background:var(--warn)} .chip--future{background:var(--purple)}
+
+/* ─── scope panel ─── */
+.scope{border:1px solid var(--line);border-radius:var(--r);background:var(--card);
+  padding:26px 30px;margin:0 0 28px;box-shadow:var(--sh-sm)}
+.scope>h2{font-size:22px;margin:4px 0 8px}
+.scope>p{font-size:14.5px;margin-bottom:20px}
+.scope-cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.scope-cols h3,.colophon h3{font-family:'Inter',sans-serif;font-size:11px;font-weight:800;
+  letter-spacing:.1em;text-transform:uppercase}
+.scope-cols h3{margin:0 0 10px;padding-bottom:9px;border-bottom:1px solid var(--line-2)}
+.holds h3{color:var(--ok)} .opens h3{color:var(--warn)}
+.scope-cols ul{list-style:none}
+.scope-cols li{font-size:13.5px;line-height:1.55;padding:6px 0 6px 23px;position:relative;color:var(--text-2)}
+.scope-cols li strong{color:var(--text)}
+.scope-cols li::before{position:absolute;left:0;font-weight:800;font-size:12.5px;top:6px}
+.holds li::before{content:'✓';color:var(--ok)}
+.opens li::before{content:'○';color:var(--warn)}
+.scope-foot{margin-top:18px;padding-top:13px;border-top:1px dashed var(--line-2);
+  font-size:12.5px;color:var(--text-3);line-height:1.6}
+
+/* ─── script ─── */
+.script{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.script>div{padding:20px 24px;border-radius:var(--r-sm)}
+.script .may{background:var(--ok-bg);border:1px solid var(--ok-line)}
+.script .never{background:var(--warn-bg);border:1px solid var(--warn-line)}
+.script h3{margin:0 0 10px}
+.script .may h3{color:var(--ok)} .script .never h3{color:var(--warn)}
+.script ul{list-style:none}
+.script li{font-size:13.5px;line-height:1.55;padding:5px 0 5px 22px;position:relative}
+.script .may li{color:var(--ok)} .script .never li{color:var(--warn)}
+.script li::before{position:absolute;left:0;font-weight:800}
+.script .may li::before{content:'✓'} .script .never li::before{content:'×'}
+
+/* ─── colophon ─── */
+.colophon{background:var(--warm);border-top:1px solid var(--line);padding:34px 0 46px;margin-top:44px}
+.colophon h3{color:var(--text-3);margin:0 0 12px}
+.colophon p{font-size:13px;line-height:1.7;max-width:100ch}
+.rev{padding:10px 0;border-bottom:1px dashed var(--line-2);font-size:12.5px;color:var(--text-2);
+  line-height:1.65;max-width:100ch}
+.rev:last-child{border-bottom:0}
+.rev-tag{font-weight:800;color:var(--text);margin-right:8px}
+.rev-date{color:var(--text-3);font-size:11.5px;margin-right:8px}
+
+@media (max-width:1180px){
+  main{padding:28px 22px 68px}
+  .grid{font-size:12.5px}
+  .grid th,.grid td{padding:9px 12px}
+  .scope-cols,.split,.split--wide{gap:20px}
+}
+@media (max-width:980px){
+  main{padding:24px 16px 60px}
+  .cards,.duo,.split,.split--wide,.script,.scope-cols{grid-template-columns:1fr}
+  .figs{gap:14px 22px}
+  .grid{font-size:11.5px}.grid th,.grid td{padding:8px 10px}
+  .plan-head .price{font-size:20px}.plan-head .name{font-size:15px}
+  .tabs .wrap{gap:6px}.tab{padding:8px 15px;font-size:12.5px}
+}
+@media print{
+  .masthead,.tabs{display:none}
+  [role="tabpanel"]{display:block!important;page-break-before:always}
+  [role="tabpanel"]:first-of-type{page-break-before:auto}
+  .note,.scope,.card,.script>div,.grid tr{break-inside:avoid}
+  body{font-size:10.5px;background:#fff}
+  main{max-width:none;padding:0}
+  .cards,.duo,.split,.split--wide,.script,.scope-cols{grid-template-columns:1fr;gap:12px}
+  .grid{font-size:9.5px;box-shadow:none}
+  .grid th,.grid td{padding:5px 8px}
+  h1{font-size:26px}h2{font-size:19px}
+  .standfirst{font-size:13px}
+  .card{box-shadow:none;padding:18px 20px}
+  .colophon{background:#fff}
+  @page{size:Letter portrait;margin:12mm 10mm}
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="mark">Neuro<b>Home</b></div>
+    <div class="basis">Plans · internal · v5.0.0 · PT $70/hr · coach $30/hr · MD $500/hr · kit per Inventory master</div>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Plan documents">
+  <div class="wrap">
+    <button class="tab" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true" data-panel="overview">Overview<span class="tab-meta">Two products</span></button>
+    <button class="tab" role="tab" id="tab-clinical" aria-controls="panel-clinical" aria-selected="false" data-panel="clinical" tabindex="-1">Clinical Intensive<span class="tab-meta">$13,000 · 57.5%</span></button>
+    <button class="tab" role="tab" id="tab-wellness" aria-controls="panel-wellness" aria-selected="false" data-panel="wellness" tabindex="-1">Wellness<span class="tab-meta">$5,000 · 78.6%</span></button>
+    <button class="tab" role="tab" id="tab-rover" aria-controls="panel-rover" aria-selected="false" data-panel="rover" tabindex="-1">Rover<span class="tab-meta">Not cleared</span></button>
+  </div>
+</nav>
+
+<main>
+
+<!-- ══════ OVERVIEW ══════ -->
+<section role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" tabindex="0">
+
+  <div class="opener">
+    <div class="eyebrow">Two products · one boundary</div>
+    <h1>Who is authorized to <em>do this</em>.</h1>
+    <p class="standfirst">The line between our two products is not price, intensity, or how standardized the program looks. It is <strong>whether clinical assessment, judgment, or treatment is occurring — and who is legally authorized to perform it.</strong> What ships in the kit, what we may claim, and which regulatory frame applies all follow from that one question.</p>
+  </div>
+
+  <div class="cards">
+    <article class="card cl">
+      <div class="badge">Clinical</div>
+      <h2>Clinical Intensive</h2>
+      <p class="line">"A licensed clinician evaluates your child, builds their plan, and treats them every session for eight weeks."</p>
+      <div class="figs">
+        <div><div class="fig-k">Price</div><div class="fig-v lead">$13,000</div></div>
+        <div><div class="fig-k">Margin</div><div class="fig-v">57.5%</div></div>
+        <div><div class="fig-k">Program</div><div class="fig-v">8 wks</div></div>
+        <div><div class="fig-k">PT hours</div><div class="fig-v">45</div></div>
+      </div>
+    </article>
+    <article class="card we">
+      <div class="badge">Wellness</div>
+      <h2>NeuroHome Wellness</h2>
+      <p class="line">"A coach guides your family through standardized healthy routines, three days a week, then two."</p>
+      <div class="figs">
+        <div><div class="fig-k">Price</div><div class="fig-v lead">$5,000</div></div>
+        <div><div class="fig-k">Margin</div><div class="fig-v">78.6%</div></div>
+        <div><div class="fig-k">Program</div><div class="fig-v">8 wks</div></div>
+        <div><div class="fig-k">Coach hrs</div><div class="fig-v">15</div></div>
+      </div>
+    </article>
+  </div>
+
+  <table class="grid">
+    <caption class="sr-only">Clinical Intensive compared with NeuroHome Wellness</caption>
+    <colgroup><col style="width:24%"><col style="width:38%"><col style="width:38%"></colgroup>
+    <thead><tr>
+      <th scope="col"><span class="none">Dimension</span></th>
+      <th scope="col" class="plan-head cl"><div class="role">Clinical</div><div class="name">Clinical Intensive</div><div class="price">$13,000</div><div class="term">8 weeks · one-time</div></th>
+      <th scope="col" class="plan-head we"><div class="role">Wellness</div><div class="name">NeuroHome Wellness</div><div class="price">$5,000</div><div class="term">8 weeks · one-time</div></th>
+    </tr></thead>
+    <tbody>
+      <tr class="band"><td colspan="3">The boundary</td></tr>
+      <tr><th scope="row" class="key">Is clinical judgment occurring?</th><td><strong>Yes — that is the product.</strong><small>assessment, response-based modification, treatment</small></td><td class="none"><strong>No, and it may never.</strong><small>nothing is altered because someone believes the child has a deficit</small></td></tr>
+      <tr><th scope="row" class="key">Who delivers</th><td><strong>Licensed Physical Therapist</strong><small>1:1, same PT the whole program</small></td><td><strong>Wellness coach</strong><small>no clinical authority of any kind</small></td></tr>
+      <tr><th scope="row" class="key">MD</th><td>1 hr · medical diagnosis, labs, supplements, medical contraindications, medical plan<small>the PT independently evaluates and owns the PT plan of care within PT scope</small></td><td class="none">None<small>no medical decisions exist in this product</small></td></tr>
+      <tr><th scope="row" class="key">How it varies per child</th><td><strong>Clinically individualized</strong><small>changes follow assessment and clinical response</small></td><td><strong>Personally tailored, not clinically individualized</strong><small>coach may adjust preference, order, and scheduling from an approved menu — never because of a suspected deficit</small></td></tr>
+      <tr><th scope="row" class="key">What we may claim</th><td>Treatment, therapy, clinical progression, individualized care<small>clinical terminology may accurately describe services delivered; efficacy and outcome claims remain subject to FTC substantiation</small></td><td>Healthy routines, movement, coordination, relaxation, sleep habits<small>never treatment for autism, reflexes, or neuroinflammation</small></td></tr>
+      <tr><th scope="row" class="key">Regulatory frame</th><td>Licensed care · state scope of practice · FTC advertising</td><td>Nonclinical coaching and education · state scope rules · FTC advertising<small>low-risk devices used consistent with FDA general-wellness posture — a device policy, not a safe harbor for the service</small></td></tr>
+
+      <tr class="band"><td colspan="3">Delivery</td></tr>
+      <tr><th scope="row" class="key">Cadence</th><td>M–F · 90 min wks 1–2, 60 min wks 3–8<small>40 sessions · 45 PT hours</small></td><td>3×/wk wks 1–4, 2×/wk wks 5–8 · 45 min<small>20 sessions · 15 coach hours</small></td></tr>
+      <tr><th scope="row" class="key">Daily family time</th><td>~140 min · treatment block plus anchors</td><td>~30–45 min · short routine anchors</td></tr>
+
+      <tr class="band"><td colspan="3">What ships</td></tr>
+      <tr><th scope="row" class="key">Kit</th><td><strong>9 items</strong> · panel, red + green handhelds, SaeboStim + pads, glasses, oils, seeds, vibration, Hub</td><td><strong>8 items</strong> · same, minus SaeboStim and pads</td></tr>
+      <tr class="flagged"><th scope="row" class="key"><span class="chip chip--flag">Review</span>SaeboStim + electrodes</th><td>Ships in base kit — <strong>device review outstanding</strong>, see Clinical Intensive</td><td class="none">— clinician-gated, never ships without a PT</td></tr>
+      <tr><th scope="row" class="key">Supplements · 2-month</th><td class="yes">All four · MD-selected<small>Intrakid · Gut Feeling · benaGene · AdrenaCalm</small></td><td class="none">— retail SKU only, no plan tie-in</td></tr>
+      <tr><th scope="row" class="key">Stool / Gut Zoomer</th><td class="yes">Included</td><td class="none">— sold separately as a clinical add-on</td></tr>
+      <tr><th scope="row" class="key">NeuroSage Hub</th><td class="yes">2 months<small>$50/mo thereafter</small></td><td class="yes">2 months<small>$50/mo thereafter</small></td></tr>
+
+      <tr class="vault"><td colspan="3">⊙ Internal · cost to deliver</td></tr>
+      <tr class="cost"><th scope="row" class="key">Hardware</th><td class="mono">$886</td><td class="mono">$621</td></tr>
+      <tr class="cost"><th scope="row" class="key">Supplements</th><td class="mono">$440</td><td class="mono">$0</td></tr>
+      <tr class="cost"><th scope="row" class="key">Labs</th><td class="mono">$550</td><td class="mono">$0</td></tr>
+      <tr class="cost"><th scope="row" class="key">Session labor</th><td class="mono">$3,150<small>PT · 45 hrs × $70</small></td><td class="mono">$450<small>coach · 15 hrs × $30</small></td></tr>
+      <tr class="cost"><th scope="row" class="key">MD</th><td class="mono">$500<small>1 hr × $500</small></td><td class="mono">$0</td></tr>
+      <tr class="rule"><th scope="row" class="key">Total COGS</th><td class="mono">$5,526</td><td class="mono">$1,071</td></tr>
+      <tr class="rule"><th scope="row" class="key">Gross profit</th><td class="mono">$7,474</td><td class="mono">$3,929</td></tr>
+      <tr class="result"><th scope="row" class="key">Gross margin</th><td>57.5%</td><td>78.6%</td></tr>
+    </tbody>
+  </table>
+
+  <div class="duo">
+    <div class="note note--info"><p><strong>Standardization was the wrong bright line.</strong> Earlier versions treated "every family gets an identical routine" as the rule keeping Wellness safe. It is not, and it made the product worse than it needed to be. The binding constraint is state scope of practice, and there the line is <strong>clinical judgment about this child</strong> — not variation as such. A coach may open with balance because the parent said the child is tired. A coach may not open with balance because the coach thinks the child's balance is impaired.</p></div>
+    <div class="note note--warn"><p><strong>The cheaper product earns more; the expensive one earns more dollars.</strong> Wellness runs 21.1 points higher because licensed labor is the entire cost story in Clinical — PT and MD are 66% of its COGS. But Clinical returns <strong>$7,474</strong> against Wellness's $3,929: one Clinical family is worth 1.9 Wellness families. Portfolio margin and portfolio profit move in opposite directions, so mix is a tracked KPI, not an assumption.</p></div>
+  </div>
+
+  <section class="block" style="margin-top:var(--y)">
+    <div class="eyebrow nv">Kit retail reference · internal only</div>
+    <h2>What the family keeps</h2>
+    <p>Values below are derived from Inventory master costs at the historical 3.7–3.8× markup. <strong>They are not currently substantiated.</strong> Only the SaeboStim has an observable third-party price; the rest are our own numbers, and a claimed comparison price is treated as a representation that the item is actually offered at that price.</p>
+    <div class="grid-scroll"><table class="grid">
+      <colgroup><col style="width:36%"><col style="width:16%"><col style="width:18%"><col style="width:15%"><col style="width:15%"></colgroup>
+      <thead><tr><th scope="col">Item</th><th scope="col" class="num">COGS</th><th scope="col" class="num">Retail ref</th><th scope="col" class="num">Clinical</th><th scope="col" class="num">Wellness</th></tr></thead>
+      <tbody>
+        <tr><th scope="row" class="key">Red Light Panel</th><td class="num">$200</td><td class="num">$750</td><td class="num yes">✓</td><td class="num yes">✓</td></tr>
+        <tr><th scope="row" class="key">Green Light Handheld</th><td class="num">$200</td><td class="num">$740</td><td class="num yes">✓</td><td class="num yes">✓</td></tr>
+        <tr><th scope="row" class="key">Red Light Handheld</th><td class="num">$120</td><td class="num">$450</td><td class="num yes">✓</td><td class="num yes">✓</td></tr>
+        <tr><th scope="row" class="key">SaeboStim</th><td class="num">$250</td><td class="num">$400</td><td class="num yes">✓</td><td class="num none">—</td></tr>
+        <tr><th scope="row" class="key">Electrode pads</th><td class="num">$15</td><td class="num">$30</td><td class="num yes">✓</td><td class="num none">—</td></tr>
+        <tr><th scope="row" class="key">Color Therapy Glasses</th><td class="num">$40</td><td class="num">$80</td><td class="num yes">✓</td><td class="num yes">✓</td></tr>
+        <tr><th scope="row" class="key">Vibration Stimulation</th><td class="num">$40</td><td class="num">$80</td><td class="num yes">✓</td><td class="num yes">✓</td></tr>
+        <tr><th scope="row" class="key">Essential Oils</th><td class="num">$15</td><td class="num">$30</td><td class="num yes">✓</td><td class="num yes">✓</td></tr>
+        <tr><th scope="row" class="key">Acupressure Seeds</th><td class="num">$6</td><td class="num">$20</td><td class="num yes">✓</td><td class="num yes">✓</td></tr>
+        <tr class="rule"><th scope="row" class="key">Kit total</th><td class="num">$886 / $621</td><td class="num">$2,580 / $2,150</td><td class="num">$2,580</td><td class="num">$2,150</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note note--warn"><p><strong>Do not use the dollar figure in customer-facing material yet.</strong> Two ways to make it usable: list the items individually on our own store at those prices, which makes the reference true of our own offered prices; or drop the number and say "the family keeps the full nine-item kit," which carries most of the persuasive weight with none of the exposure. <strong>Recommendation:</strong> the second for launch, the first later — a standalone store is real inventory, fulfillment, and support work, and is not worth building to unlock a sales line before the first program has sold.</p></div>
+  </section>
+
+</section>
+
+<!-- ══════ CLINICAL ══════ -->
+<section role="tabpanel" id="panel-clinical" aria-labelledby="tab-clinical" tabindex="0" hidden>
+
+  <div class="opener">
+    <div class="eyebrow nv">The clinical product</div>
+    <h1>Clinical Intensive · <span class="nv">$13,000</span></h1>
+    <p class="standfirst">A licensed physical therapist delivers all 40 sessions and owns the PT plan of care. An MD owns medical diagnosis, the stool panel, supplements, and medical contraindications. Neither directs the other outside their license.</p>
+  </div>
+
+  <div class="scope">
+    <div class="eyebrow nv">Why this structure holds</div>
+    <h2>Licensed care, delivered by licensed people</h2>
+    <p>Clinical Intensive makes treatment claims because a licensed clinician is actually delivering treatment. Every clinical act — ordering a lab, reading it, authoring a medical plan, establishing a PT plan of care, supervising a device — sits with someone whose license covers it.</p>
+    <div class="scope-cols">
+      <div class="holds"><h3>What makes it defensible</h3><ul>
+        <li><strong>A licensed PT delivers all 40 sessions.</strong> The prior model put an unlicensed concierge on screen for 68 hours while making clinical claims. That gap is closed.</li>
+        <li><strong>Authority splits along scope lines.</strong> The MD owns medical diagnosis, labs, supplements, contraindications, and the medical plan. The PT independently evaluates, establishes and modifies the PT plan of care, and treats within PT scope.</li>
+        <li><strong>The MD hour is costed, not assumed.</strong> v2.6.0 shipped labs with no clinician budgeted to order or interpret them.</li>
+        <li><strong>Individualization is permitted</strong> precisely because a licensed clinician performs it — the same act that would be a violation in a wellness tier.</li>
+      </ul></div>
+      <div class="opens"><h3>What still has to be true</h3><ul>
+        <li><strong>PT licensure in each patient's state.</strong> A separate compact privilege is purchased per remote state, and the PT practices under the scope law of the state where the <em>patient</em> is located. The Compact does not cover every state; verify current status rather than relying on a count.</li>
+        <li><strong>MD licensure and ordering authority</strong> in the state where the lab is ordered and the medical plan authored.</li>
+        <li><strong>Clinical terminology is not efficacy substantiation.</strong> Describing services accurately is permitted; outcome claims remain an FTC question.</li>
+        <li><strong>HIPAA coverage</strong> across every vendor touching PHI — signed BAAs, not assumed ones.</li>
+        <li><strong>Telehealth consent and documentation</strong> per session, per state.</li>
+      </ul></div>
+    </div>
+    <p class="scope-foot">Design rationale, not a legal opinion. Nothing here has been reviewed by counsel. Every item in the right-hand column blocks go-live until it isn't.</p>
+  </div>
+
+  <div class="split split--wide">
+    <div>
+      <div class="eyebrow nv">Cost to deliver</div>
+      <h2>The math behind $13,000</h2>
+      <table class="grid">
+        <colgroup><col style="width:40%"><col style="width:38%"><col style="width:22%"></colgroup>
+        <thead><tr><th scope="col">Item</th><th scope="col">Basis</th><th scope="col" class="num">Cost</th></tr></thead>
+        <tbody>
+          <tr class="band"><td colspan="3">Hardware · 9-item kit</td></tr>
+          <tr><th scope="row">Red Light Panel</th><td><small>RLPRO 100-9Wave</small></td><td class="num">$200</td></tr>
+          <tr><th scope="row">Red Light Handheld</th><td><small>RL12-B.1</small></td><td class="num">$120</td></tr>
+          <tr><th scope="row">Green Light Handheld</th><td><small>RL12-B.2</small></td><td class="num">$200</td></tr>
+          <tr class="flagged"><th scope="row"><span class="chip chip--flag">Review</span>SaeboStim</th><td><small>4-in-1 neuromuscular estim</small></td><td class="num">$250</td></tr>
+          <tr class="flagged"><th scope="row"><span class="chip chip--flag">Review</span>Electrode pads</th><td><small>TensCare 25mm · 10-pack</small></td><td class="num">$15</td></tr>
+          <tr><th scope="row">Color Therapy Glasses</th><td><small>GloFX red + blue pair</small></td><td class="num">$40</td></tr>
+          <tr><th scope="row">Essential Oils</th><td><small>ArtNaturals Top 6</small></td><td class="num">$15</td></tr>
+          <tr><th scope="row">Acupressure Seeds</th><td><small>Vaccaria</small></td><td class="num">$6</td></tr>
+          <tr><th scope="row">Vibration Stimulation</th><td><small>SensoryBuzz</small></td><td class="num">$40</td></tr>
+          <tr><th scope="row">NeuroSage Hub</th><td><small>proprietary · 2 months</small></td><td class="num">$0</td></tr>
+          <tr class="cost"><th scope="row" class="key" colspan="2">Hardware subtotal</th><td class="num mono">$886</td></tr>
+
+          <tr class="band"><td colspan="3">Supplements · 2-month supply</td></tr>
+          <tr><th scope="row">Intrakid</th><td><small>Drucker Labs pediatric</small></td><td class="num">$90</td></tr>
+          <tr><th scope="row">Gut Feeling</th><td><small>BPC-157 + KPV + Akkermansia</small></td><td class="num">$160</td></tr>
+          <tr><th scope="row">benaGene</th><td><small>oxaloacetate lozenges</small></td><td class="num">$60</td></tr>
+          <tr><th scope="row">AdrenaCalm</th><td><small>topical HPA-axis</small></td><td class="num">$130</td></tr>
+          <tr class="cost"><th scope="row" class="key" colspan="2">Supplements subtotal</th><td class="num mono">$440</td></tr>
+
+          <tr class="band"><td colspan="3">Labs · clinical labor</td></tr>
+          <tr><th scope="row">Stool / Gut Zoomer</th><td><small>all-in cost to clinic</small></td><td class="num">$550</td></tr>
+          <tr><th scope="row">Physical Therapist</th><td><small>45 hrs × $70 · PRN 1099</small></td><td class="num">$3,150</td></tr>
+          <tr><th scope="row">MD</th><td><small>1 hr × $500 · medical plan + panel</small></td><td class="num">$500</td></tr>
+
+          <tr class="rule"><th scope="row" class="key" colspan="2">Total COGS</th><td class="num mono">$5,526</td></tr>
+          <tr class="rule"><th scope="row" class="key" colspan="2">Gross profit</th><td class="num mono">$7,474</td></tr>
+          <tr class="result"><th scope="row" class="key" colspan="2">Gross margin</th><td class="num">57.5%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <div class="eyebrow nv">Session cadence</div>
+      <h2>Forty sessions, tapering</h2>
+      <div class="grid-scroll"><table class="grid">
+        <colgroup><col style="width:36%"><col style="width:20%"><col style="width:22%"><col style="width:22%"></colgroup>
+        <thead><tr><th scope="col">Phase</th><th scope="col" class="num">Sessions</th><th scope="col" class="num">Length</th><th scope="col" class="num">Hours</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Weeks 1–2 · M–F<small>evaluation, onboarding, kit teaching</small></th><td class="num">10</td><td class="num">90 min</td><td class="num">15.0</td></tr>
+          <tr><th scope="row">Weeks 3–8 · M–F<small>treatment, progression, reassessment</small></th><td class="num">30</td><td class="num">60 min</td><td class="num">30.0</td></tr>
+          <tr class="rule"><th scope="row" class="key">Total</th><td class="num">40</td><td class="num">—</td><td class="num">45.0</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Who owns what</h3>
+      <table class="grid">
+        <colgroup><col style="width:22%"><col style="width:78%"></colgroup>
+        <thead><tr><th scope="col">Role</th><th scope="col">Scope</th></tr></thead>
+        <tbody>
+          <tr><th scope="row" class="key">MD<small>1 hr</small></th><td>Medical diagnosis · orders and interprets the stool panel · selects supplements · identifies medical contraindications · owns the medical plan.</td></tr>
+          <tr><th scope="row" class="key">PT<small>45 hrs</small></th><td>Independently evaluates the child · establishes and modifies the PT plan of care · delivers treatment and progressions within PT scope · reassesses. Not executing someone else's plan.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>What the family gets</h3>
+      <ul class="marks">
+        <li><strong>An independent PT evaluation</strong> and a PT plan of care that changes as the child responds</li>
+        <li><strong>45 hours of licensed clinician time</strong>, 1:1, same PT throughout</li>
+        <li><strong>Full 9-item kit</strong> including SaeboStim — the only tier where estim ships</li>
+        <li><strong>All four MD-selected supplements</strong>, 2-month supply</li>
+        <li><strong>Stool / Gut Zoomer</strong> ordered and interpreted by the MD</li>
+        <li><strong>ATEC</strong> at baseline, week 4, week 8 · plus Hub engagement data</li>
+        <li><strong>Exit documentation</strong> — maintenance protocol after week 8</li>
+      </ul>
+
+      <div class="note note--warn"><p><strong>Two operational exposures.</strong> PT labor is <strong>$79 per session</strong> — a no-show costs more than a week of supplements, so cancellation terms are a margin control. And the MD hour is 9.0% of COGS for one hour of work; batching one MD hour across three or four families' panels amortizes it to $125–$167 and recovers roughly 2.5 margin points.</p></div>
+    </div>
+  </div>
+
+  <section class="block" style="margin-top:var(--y)">
+    <div class="eyebrow nv">Device review</div>
+    <h2>One item cannot ship as described</h2>
+    <div class="note note--warn">
+      <p><span class="chip chip--flag">Review</span><strong>SaeboStim · cranial placement.</strong> A PT license does not make every e-stim application permissible. Required before this ships again: exact device clearance and labeling, prescription status, pediatric intended use, listed contraindications, home-use labeling, and PT scope for this modality in the patient's state.</p>
+      <p><strong>The specific concern:</strong> the protocol places pads on the face and behind the ears. General NMES clearances are typically for muscle re-education in the extremities, and labeling commonly contraindicates head and neck placement — which would make this company-directed off-label cranial use on a pediatric patient at home. This is arguably a larger exposure than the laser lane, because the laser has never been sold and this ships in the base kit today. If it resolves badly, SaeboStim leaves the kit and the hardware distinction between Clinical and Wellness narrows to nearly nothing.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="eyebrow nv">Upsell lanes</div>
+    <h2>What we sell after the sale</h2>
+    <p>Every lane is triggered by something that happened in the program, not by a calendar. That keeps the upsell a conversation about the child rather than a pitch.</p>
+    <div class="grid-scroll"><table class="grid">
+      <colgroup><col style="width:19%"><col style="width:33%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:12%"></colgroup>
+      <thead><tr><th scope="col">Lane</th><th scope="col">Clinical trigger</th><th scope="col" class="num">Price</th><th scope="col" class="num">COGS</th><th scope="col" class="num">Margin</th><th scope="col" class="num">Gross profit</th></tr></thead>
+      <tbody>
+        <tr><th scope="row" class="key">OAT panel<small>Organic Acids Test</small></th><td>Stool returns ambiguous, or ATEC delta is flat at week 4 — the non-responder is the clinically correct candidate</td><td class="num">$1,150</td><td class="num">$400</td><td class="num">65.2%</td><td class="num">$750</td></tr>
+        <tr><th scope="row" class="key">Total Tox Burden<small>urine · mycotoxins, chemical, metals</small></th><td>Regression history, known mold or water-damage exposure, or OAT returns fungal metabolites</td><td class="num">$1,995</td><td class="num">$700</td><td class="num">64.9%</td><td class="num">$1,295</td></tr>
+        <tr><th scope="row" class="key">Neural Zoomer Plus<small>blood · neuro-immune</small></th><td>Abrupt onset, strep or EBV history, or autoimmune-brain presentation. The PANS-adjacent panel.</td><td class="num">$1,295</td><td class="num">$450</td><td class="num">65.3%</td><td class="num">$845</td></tr>
+        <tr><th scope="row" class="key">PT time<small>30-min session</small></th><td>Graduate hits a regression, plateau, or question the exit documentation does not cover. Bookable after week 8.</td><td class="num">$120</td><td class="num">$35</td><td class="num">70.8%</td><td class="num">$85</td></tr>
+        <tr><th scope="row" class="key">Supplement refill<small>four-supplement stack</small></th><td>2-month supply runs out at graduation — no decision required mid-program.</td><td class="num">$495/mo</td><td class="num">$220/mo</td><td class="num">55.6%</td><td class="num">$275/mo</td></tr>
+        <tr><th scope="row" class="key">Hub continuation</th><td>After the 2 months included. The only zero-cost recurring line in the portfolio.</td><td class="num">$50/mo</td><td class="num">$0</td><td class="num">100%</td><td class="num">$50/mo</td></tr>
+        <tr class="halted"><th scope="row" class="key"><span class="chip chip--stop">Hold</span>Higher-output laser<small>not a lane until cleared</small></th><td><strong>Blocked.</strong> MD and PT judgment does not authorize a home-use device. Required first: FDA classification and clearance, labeling and intended use, prescription status, pediatric intended use, PT scope for the modality in the patient's state, operator training, home-use rules.</td><td class="num">$8,000</td><td class="num">$4,000</td><td class="num">50.0%</td><td class="num">$4,000</td></tr>
+      </tbody>
+    </table></div>
+    <div class="duo">
+      <div class="note note--info"><p><strong>The lab ladder is the real upsell engine.</strong> Stool in base → OAT → Total Tox → Neural Zoomer, each with its own clinical trigger and each landing near 65%. A non-responding child can honestly generate $4,440 of additional panels at $2,890 of gross profit, and every step is the clinically correct next question rather than a pitch.</p></div>
+      <div class="note note--ok"><p><strong>Time the upsell to graduation, not to week 4.</strong> In an 8-week intensive where compliance is the product, a purchase decision mid-program costs attention you need. Both the panels and the refill land naturally at week 8, when ATEC baseline, midpoint, and final data exists. If the delta is real, the refill sells itself; if it isn't, the next panel is the honest step.</p></div>
+    </div>
+    <div class="note note--stop"><p><strong>The laser is the largest single profit line in the portfolio and the worst margin.</strong> $4,000 of gross profit at 50.0% — 7.5 points under Clinical's base and 28 under Wellness. It is accretive in dollars and dilutive in percentage. It is also on hold, and should stay there until the device questions resolve.</p></div>
+  </section>
+
+</section>
+
+<!-- ══════ WELLNESS ══════ -->
+<section role="tabpanel" id="panel-wellness" aria-labelledby="tab-wellness" tabindex="0" hidden>
+
+  <div class="opener">
+    <div class="eyebrow">The wellness product</div>
+    <h1>NeuroHome Wellness · <em>$5,000</em></h1>
+    <p class="standfirst">A wellness coach guides a standardized routine three days a week for the first month, then twice a week for the second. No labs, no supplements, no MD, no estim. The coach may tailor for preference, order, and scheduling — never for a suspected deficit. That distinction is the whole product.</p>
+  </div>
+
+  <div class="scope">
+    <div class="eyebrow">Why this structure holds</div>
+    <h2>A general-wellness product, by construction</h2>
+    <p>The product is built so that no clinical assessment, judgment, or treatment occurs in it — not by labeling, but by removing every element that would require them. FDA's general-wellness policy covers the low-risk devices used; the service itself sits under nonclinical coaching, state scope rules, and FTC advertising law.</p>
+    <div class="scope-cols">
+      <div class="holds"><h3>What makes it defensible</h3><ul>
+        <li><strong>Nothing diagnosis-driven exists in the product.</strong> No labs, no MD, no estim, no supplements in the plan. There is no clinical finding that could drive a change, because there is no clinical finding.</li>
+        <li><strong>The coach has no clinical authority</strong> and no discretion to adapt for a suspected deficit. Personalization is limited to preference, order, and scheduling from an approved menu.</li>
+        <li><strong>Claims stay on the wellness side</strong> — healthy routines, movement, coordination, relaxation, sleep habits.</li>
+        <li><strong>Clinical add-ons are sold separately</strong> and never enter a session.</li>
+      </ul></div>
+      <div class="opens"><h3>What still has to be true</h3><ul>
+        <li><strong>The approved activity menu, coach training, and session logging.</strong> These make the boundary real and are not yet built or budgeted. The log must record the reason for a selection, so the record shows a non-clinical basis.</li>
+        <li><strong>Device labeling and intended-use review.</strong> The light devices must be positioned for general wellness in their own labeling, not just in ours.</li>
+        <li><strong>Marketing copy review.</strong> Intended use is evidenced by what is said publicly as much as in session. A single treatment claim on a landing page undoes the structure.</li>
+        <li><strong>FTC substantiation</strong> for any objective health claim, however softly phrased.</li>
+        <li><strong>A scripted escalation path</strong> for clinical questions, so the coach never improvises an answer.</li>
+      </ul></div>
+    </div>
+    <p class="scope-foot">Design rationale, not a legal opinion. Nothing here has been reviewed by counsel. The structure is only as good as the scripting and training that enforce it.</p>
+  </div>
+
+  <div class="split">
+    <div>
+      <div class="eyebrow">Cost to deliver</div>
+      <h2>The math behind $5,000</h2>
+      <table class="grid">
+        <colgroup><col style="width:44%"><col style="width:34%"><col style="width:22%"></colgroup>
+        <thead><tr><th scope="col">Item</th><th scope="col">Basis</th><th scope="col" class="num">Cost</th></tr></thead>
+        <tbody>
+          <tr class="band"><td colspan="3">Hardware · 8-item wellness kit</td></tr>
+          <tr><th scope="row">Red Light Panel</th><td><small>RLPRO 100-9Wave</small></td><td class="num">$200</td></tr>
+          <tr><th scope="row">Red Light Handheld</th><td><small>RL12-B.1</small></td><td class="num">$120</td></tr>
+          <tr><th scope="row">Green Light Handheld</th><td><small>RL12-B.2</small></td><td class="num">$200</td></tr>
+          <tr><th scope="row">Color Therapy Glasses</th><td><small>GloFX red + blue pair</small></td><td class="num">$40</td></tr>
+          <tr><th scope="row">Essential Oils</th><td><small>ArtNaturals Top 6</small></td><td class="num">$15</td></tr>
+          <tr><th scope="row">Acupressure Seeds</th><td><small>Vaccaria</small></td><td class="num">$6</td></tr>
+          <tr><th scope="row">Vibration Stimulation</th><td><small>SensoryBuzz</small></td><td class="num">$40</td></tr>
+          <tr><th scope="row">NeuroSage Hub</th><td><small>proprietary · 2 months</small></td><td class="num">$0</td></tr>
+          <tr class="cost"><th scope="row" class="key" colspan="2">Hardware subtotal</th><td class="num mono">$621</td></tr>
+          <tr class="band"><td colspan="3">Labor</td></tr>
+          <tr><th scope="row">Wellness coach</th><td><small>15 hrs × $30 · 1099</small></td><td class="num">$450</td></tr>
+          <tr class="rule"><th scope="row" class="key" colspan="2">Total COGS</th><td class="num mono">$1,071</td></tr>
+          <tr class="rule"><th scope="row" class="key" colspan="2">Gross profit</th><td class="num mono">$3,929</td></tr>
+          <tr class="result"><th scope="row" class="key" colspan="2">Gross margin</th><td class="num">78.6%</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Cadence</h3>
+      <div class="grid-scroll"><table class="grid">
+        <colgroup><col style="width:40%"><col style="width:20%"><col style="width:20%"><col style="width:20%"></colgroup>
+        <thead><tr><th scope="col">Phase</th><th scope="col" class="num">Sessions</th><th scope="col" class="num">Length</th><th scope="col" class="num">Hours</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Weeks 1–4 · 3×/wk<small>learning the routine</small></th><td class="num">12</td><td class="num">45 min</td><td class="num">9.0</td></tr>
+          <tr><th scope="row">Weeks 5–8 · 2×/wk<small>habit holds, coach steps back</small></th><td class="num">8</td><td class="num">45 min</td><td class="num">6.0</td></tr>
+          <tr class="rule"><th scope="row" class="key">Total</th><td class="num">20</td><td class="num">—</td><td class="num">15.0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div>
+      <div class="eyebrow">How a session runs</div>
+      <h2>Forty-five scripted minutes</h2>
+      <table class="grid">
+        <colgroup><col style="width:22%"><col style="width:58%"><col style="width:20%"></colgroup>
+        <thead><tr><th scope="col">Segment</th><th scope="col">What happens</th><th scope="col" class="num">Time</th></tr></thead>
+        <tbody>
+          <tr><th scope="row" class="key">Check in</th><td>Coach greets the family, reviews the log, notes what the family did since last session. No assessment, no interpretation.</td><td class="num">5 min</td></tr>
+          <tr><th scope="row" class="key">Movement</th><td>Coordination and balance activities selected from the approved menu — cross-crawl, single-leg balance, animal walks, metronome work. Order may follow family preference.</td><td class="num">15 min</td></tr>
+          <tr><th scope="row" class="key">Hub round</th><td>NeuroSage Hub game from the standard rotation. Coach encourages, tracks minutes and reps.</td><td class="num">10 min</td></tr>
+          <tr><th scope="row" class="key">Wellness light</th><td>Standardized general-wellness light routine — manufacturer-consistent duration and general-wellness use. No neurological or anatomical targeting.</td><td class="num">10 min</td></tr>
+          <tr><th scope="row" class="key">Wind-down</th><td>Calming routine, oils, breathing. Coach logs the session and confirms the next one.</td><td class="num">5 min</td></tr>
+        </tbody>
+      </table>
+
+      <h3>What may go on the page</h3>
+      <ul class="marks">
+        <li><strong>Permitted framing</strong> — healthy daily routines, movement and coordination practice, rhythm activities, relaxation, sleep habits, family structure and consistency</li>
+        <li><strong>Devices</strong> — general-wellness terms only; labeling and intended use must support the wellness position</li>
+        <li><strong>Outcome language</strong> — engagement, consistency, minutes completed, routine adherence. Not symptom change.</li>
+        <li><strong>Never</strong> — autism, primitive reflexes, neuroinflammation, brainstem, treatment, therapy, protocol, dose</li>
+      </ul>
+
+      <div class="note note--info"><p><strong>Personalization is allowed. Clinical individualization is not.</strong> The coach may choose from an approved menu, change the order, or move a session because of preference, schedule, or engagement. The coach may not change anything because they believe the child has a neurological or medical deficit. The log records the reason for each selection.</p></div>
+    </div>
+  </div>
+
+  <section class="block" style="margin-top:var(--y)">
+    <div class="eyebrow">The coach boundary</div>
+    <h2>What keeps this a wellness product</h2>
+    <div class="script">
+      <div class="may"><h3>A coach may say</h3><ul>
+        <li>"Today's coordination activity is Cross Crawl."</li>
+        <li>"You said he's dragging today — let's start with the balance one instead."</li>
+        <li>"Today is the 10-minute general-wellness light routine."</li>
+        <li>"You logged four days this week. That's the rhythm we're after."</li>
+        <li>"That question is one for a clinician — let me get you the right conversation."</li>
+      </ul></div>
+      <div class="never"><h3>A coach may never say</h3><ul>
+        <li>"He's retained ATNR, so we need Cross Crawl."</li>
+        <li>"His balance looks weak — let's work on that."</li>
+        <li>"Let's increase the light dose."</li>
+        <li>"Skip that one today, his regulation is off."</li>
+        <li>Anything that changes the session because of a suspected deficit.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="eyebrow">Upsell lanes</div>
+    <h2>Where a wellness family goes next</h2>
+    <div class="grid-scroll"><table class="grid">
+      <colgroup><col style="width:21%"><col style="width:31%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:12%"></colgroup>
+      <thead><tr><th scope="col">Lane</th><th scope="col">Trigger</th><th scope="col" class="num">Price</th><th scope="col" class="num">COGS</th><th scope="col" class="num">Margin</th><th scope="col" class="num">Gross profit</th></tr></thead>
+      <tbody>
+        <tr><th scope="row" class="key">Lab report + consultation<small>Stool panel + 1 hr MD</small></th><td>Parent wants to know what is driving what. A separate clinical service, never bundled into the wellness program.</td><td class="num">$2,995</td><td class="num">$1,050</td><td class="num">64.9%</td><td class="num">$1,945</td></tr>
+        <tr><th scope="row" class="key">PT time<small>30-min session</small></th><td>Parent has questions about their own child that a coach cannot answer. Separate clinical service — the PT never joins a wellness session.</td><td class="num">$120</td><td class="num">$35</td><td class="num">70.8%</td><td class="num">$85</td></tr>
+        <tr><th scope="row" class="key">Supplements · retail<small>four-supplement stack</small></th><td>Retail product, no MD selection, no protocol tie-in.</td><td class="num">$495/mo</td><td class="num">$220/mo</td><td class="num">55.6%</td><td class="num">$275/mo</td></tr>
+        <tr><th scope="row" class="key">Hub continuation</th><td>After the 2 months included. The only zero-cost recurring line in the portfolio.</td><td class="num">$50/mo</td><td class="num">$0</td><td class="num">100%</td><td class="num">$50/mo</td></tr>
+        <tr><th scope="row" class="key">Upgrade to Clinical<small>$1,500 credit</small></th><td>Family already owns 8 of 9 kit items. Credit valid 90 days from program completion.</td><td class="num">$11,500</td><td class="num">$4,905</td><td class="num">57.3%</td><td class="num">$6,595</td></tr>
+      </tbody>
+    </table></div>
+    <div class="duo">
+      <div class="note note--info"><p><strong>The clinical add-ons are the bridge, and they stay structurally separate.</strong> The lab consult and PT time are the natural next questions for an engaged wellness parent, and the moment a family self-selects into clinical. But the instant a lab result or a PT's answer changes what the coach does, the wellness product is running a clinically individualized plan. Rule: findings and clinical answers go to the parent. A licensed clinician never joins a wellness session.</p></div>
+      <div class="note note--warn"><p><strong>Not in the COGS above.</strong> The approved activity menu, coach training on the personalization boundary, and session logging that records a non-clinical basis for each selection are prerequisites, not polish. The looser personalization rule makes the product better and the training harder — "read the script" was easier to enforce than "choose from the menu for non-clinical reasons."</p></div>
+    </div>
+  </section>
+
+</section>
+
+<!-- ══════ ROVER ══════ -->
+<section role="tabpanel" id="panel-rover" aria-labelledby="tab-rover" tabindex="0" hidden>
+
+  <div class="opener">
+    <div class="eyebrow pu">Future state · legal review required</div>
+    <h1>Rover · <span class="pu">not cleared for build</span>.</h1>
+    <p class="standfirst">A PT rotates between four Zoom rooms, providing synchronous skilled treatment to each child during every scheduled session. Between PT touchpoints the parent carries out previously taught home activities while a coach provides nonclinical logistical and documentation support. The economics are compelling. The model is not cleared.</p>
+  </div>
+
+  <div class="scope">
+    <div class="eyebrow pu">Why this structure holds — and where it doesn't</div>
+    <h2>Same licensed basis, new disclosure and privacy questions</h2>
+    <p>Rover inherits Clinical Intensive's compliance basis — a licensed PT treats each child, the MD owns the medical decisions, the plan is individualized. What changes is that the clinician's attention is divided across four families. Four separate breakout rooms are not automatically equivalent to conventional group physical therapy.</p>
+    <div class="scope-cols">
+      <div class="holds"><h3>What makes it defensible</h3><ul>
+        <li><strong>A licensed PT provides synchronous skilled treatment</strong> to each child during every scheduled session. Group delivery by a licensed clinician is an established care model.</li>
+        <li><strong>The MD role is unchanged</strong> — same hour, same ownership of the panel, the medical plan, and the supplement stack.</li>
+        <li><strong>The support coach is scoped to logistics and documentation.</strong> No clinical authority, no direction.</li>
+      </ul></div>
+      <div class="opens"><h3>What still has to be true</h3><ul>
+        <li><strong>This creates disclosure, privacy, scope and supervision questions</strong> — and payer questions if billing is ever introduced. Counsel review is required before build, not before launch.</li>
+        <li><strong>Privacy in a shared session.</strong> Whether any family can see or hear another family's session must be architecturally impossible, not procedurally discouraged.</li>
+        <li><strong>Estim supervision.</strong> Estim must occur inside the PT touchpoint with the PT present in <em>that family's</em> room. The alternative is a separately established parent-home-use pathway. Neither exists — and SaeboStim is itself under device review.</li>
+        <li><strong>Group delivery stated plainly</strong> in contract and marketing, judged on Rover's own copy.</li>
+        <li><strong>PT licensure across every state in the pod</strong>, which may span four.</li>
+        <li><strong>Coach scope in writing.</strong> The moment she directs treatment she is practicing.</li>
+        <li><strong>Pod attrition terms</strong> in the contract, since delivery and refund both depend on pod composition.</li>
+      </ul></div>
+    </div>
+    <p class="scope-foot">Design rationale, not a legal opinion. Nothing here has been reviewed by counsel. The shared-room privacy question is new to this model and has no answer yet.</p>
+  </div>
+
+  <div class="cards" style="grid-template-columns:1fr">
+    <article class="card rv">
+      <div class="badge"><span class="chip chip--future">Future state</span>Pod of 4 · legal review required before build</div>
+      <h2>Clinical Rover</h2>
+      <p class="line">"A licensed therapist treats your child live in every session — and someone is with you for every minute of it."</p>
+      <div class="figs">
+        <div><div class="fig-k">Price</div><div class="fig-v lead">$13,000</div></div>
+        <div><div class="fig-k">Margin at 4/4</div><div class="fig-v">62.1%</div></div>
+        <div><div class="fig-k">Planned PT attention</div><div class="fig-v">15 hrs</div></div>
+        <div><div class="fig-k">Gross profit</div><div class="fig-v">$8,074</div></div>
+      </div>
+    </article>
+  </div>
+
+  <div class="grid-scroll"><table class="grid">
+    <colgroup><col style="width:22%"><col style="width:26%"><col style="width:26%"><col style="width:26%"></colgroup>
+    <thead><tr>
+      <th scope="col"><span class="none">Dimension</span></th>
+      <th scope="col" class="plan-head lg"><div class="role">Legacy · v2.6.0</div><div class="name">Plan A Full</div><div class="price">$11,500</div><div class="term">retired</div></th>
+      <th scope="col" class="plan-head cl"><div class="role">Today</div><div class="name">Clinical Intensive</div><div class="price">$13,000</div><div class="term">launch product</div></th>
+      <th scope="col" class="plan-head rv"><div class="role">Future state</div><div class="name">Clinical Rover</div><div class="price">$13,000</div><div class="term">pod of 4 · not cleared</div></th>
+    </tr></thead>
+    <tbody>
+      <tr class="band"><td colspan="4">Delivery</td></tr>
+      <tr><th scope="row" class="key">Who is on the screen</th><td class="none"><strong>Concierge</strong><small>unlicensed · $25/hr</small></td><td><strong>Licensed PT</strong><small>1:1, dedicated · $70/hr</small></td><td><strong>Licensed PT</strong><small>rotating across 4 rooms · $70/hr</small></td></tr>
+      <tr><th scope="row" class="key">Between touchpoints</th><td>—</td><td>—</td><td>Parent continues previously taught home activities; coach provides logistics and documentation only</td></tr>
+      <tr><th scope="row" class="key">Session hours per family</th><td class="mono">68 concierge + 4 OT/PT</td><td class="mono">45</td><td class="mono">60</td></tr>
+      <tr><th scope="row" class="key">Planned PT attention</th><td class="mono none">0<small>concierge was unlicensed</small></td><td class="mono">45 hrs<small>dedicated, whole session</small></td><td class="mono">15 hrs<small>economic allocation, 60 ÷ 4 — not yet an enforced minimum</small></td></tr>
+      <tr><th scope="row" class="key">Scheduling</th><td>Flexible</td><td>Flexible</td><td class="none"><strong>Fixed cohort slot</strong><small>four families share the clock</small></td></tr>
+
+      <tr class="vault"><td colspan="4">⊙ Internal · cost to deliver</td></tr>
+      <tr class="cost"><th scope="row" class="key">Hardware</th><td class="mono">$886</td><td class="mono">$886</td><td class="mono">$886</td></tr>
+      <tr class="cost"><th scope="row" class="key">Supplements</th><td class="mono">$440</td><td class="mono">$440</td><td class="mono">$440</td></tr>
+      <tr class="cost"><th scope="row" class="key">Labs</th><td class="mono">$950</td><td class="mono">$550</td><td class="mono">$550</td></tr>
+      <tr class="cost"><th scope="row" class="key">Session labor</th><td class="mono">$1,700<small>68 hrs × $25</small></td><td class="mono">$3,150<small>45 hrs × $70</small></td><td class="mono">$1,050<small>60 hrs × $70 ÷ 4</small></td></tr>
+      <tr class="cost"><th scope="row" class="key">Support coach</th><td class="mono">$0</td><td class="mono">$0</td><td class="mono">$1,500<small>60 hrs × $25</small></td></tr>
+      <tr class="cost"><th scope="row" class="key">OT/PT · MD</th><td class="mono">$240<small>no MD</small></td><td class="mono">$500<small>MD 1 hr</small></td><td class="mono">$500<small>MD 1 hr</small></td></tr>
+      <tr class="rule"><th scope="row" class="key">Total COGS</th><td class="mono">$4,216</td><td class="mono">$5,526</td><td class="mono">$4,926</td></tr>
+      <tr class="rule"><th scope="row" class="key">Gross profit</th><td class="mono">$7,284</td><td class="mono">$7,474</td><td class="mono">$8,074</td></tr>
+      <tr class="result"><th scope="row" class="key">Gross margin</th><td>63.3%</td><td>57.5%</td><td>62.1%</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note note--ok"><p><strong>Rover fixes what the legacy model got wrong about credentials.</strong> Plan A hit 63.3% by putting unlicensed labor on the screen for 68 hours while making clinical claims. Clinical Intensive fixed the credential and paid 5.8 points for it. Rover recovers <strong>62.1%</strong> by sharing a licensed clinician four ways instead of hiring a cheaper unlicensed one. Every skilled clinical intervention is delivered by the licensed PT.</p></div>
+
+  <div class="note note--warn"><p><strong>Be honest about what the family gets.</strong> At a full pod the PT is in-room 60 hours across four families, which is <strong>15 hours of clinician attention per child</strong> — one third of Clinical Intensive's 45 dedicated hours, at the same $13,000. The family is in session longer and has a coach present throughout, but coach hours are logistics and documentation, not treatment. Rover is a margin improvement, not a customer-value improvement.</p></div>
+
+  <div class="split" style="margin-top:var(--y)">
+    <div>
+      <div class="eyebrow pu">Attention versus margin</div>
+      <h2>The one COGS that moves</h2>
+      <div class="grid-scroll"><table class="grid">
+        <colgroup><col style="width:30%"><col style="width:18%"><col style="width:18%"><col style="width:17%"><col style="width:17%"></colgroup>
+        <thead><tr><th scope="col">Rooms filled</th><th scope="col" class="num">PT attention</th><th scope="col" class="num">PT / family</th><th scope="col" class="num">COGS</th><th scope="col" class="num">Margin</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">4 of 4</th><td class="num">15.0 hrs</td><td class="num">$1,050</td><td class="num">$4,926</td><td class="num">62.1%</td></tr>
+          <tr><th scope="row">3 of 4</th><td class="num">20.0 hrs</td><td class="num">$1,400</td><td class="num">$5,276</td><td class="num">59.4%</td></tr>
+          <tr class="pivot"><th scope="row">2.55 — margin parity</th><td class="num">23.5 hrs</td><td class="num">$1,650</td><td class="num">$5,526</td><td class="num">57.5%</td></tr>
+          <tr><th scope="row">2 of 4</th><td class="num">30.0 hrs</td><td class="num">$2,100</td><td class="num">$5,976</td><td class="num">54.0%</td></tr>
+          <tr><th scope="row">1 of 4 · solo</th><td class="num">60.0 hrs</td><td class="num">$4,200</td><td class="num">$8,076</td><td class="num">37.9%</td></tr>
+          <tr class="rule"><th scope="row" class="key">Clinical Intensive</th><td class="num">45.0 hrs</td><td class="num">$3,150</td><td class="num">$5,526</td><td class="num">57.5%</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note note--info"><p><strong>This is not a fill-rate table — it is the trade.</strong> An under-filled pod is a better product for the families in it and a worse one for the business. At no pod size does Rover beat Intensive on both. A full pod wins on margin by 4.6 points while planning a third of the clinician attention.</p></div>
+    </div>
+    <div>
+      <div class="eyebrow pu">Two decisions before build</div>
+      <h2>Allocation is not a promise</h2>
+      <div class="note note--warn"><p><strong>15 hours is an allocation, not a delivery guarantee.</strong> 60 ÷ 4 is how the cost divides, not proof any family received 15 hours. Converting it into a documented enforceable minimum makes the claim defensible — and removes the ability to give 25 hours to the dysregulated child and 8 to the easy one, which is the clinical reason to have a roving PT at all. Enforceable minimum and clinical flexibility are in direct tension. Choose deliberately, then write the marketing to match.</p></div>
+      <div class="note note--ok"><p><strong>One clinical product at a time.</strong> Intensive and Rover both sit at $13,000 and are never co-listed, quoted, or compared. Switchover is a clean cutover — the rate card, the consult script, and the site show exactly one clinical product on any given day. What that policy does <em>not</em> solve: Rover's own claim language, cohort overlap in parent communities, repeat buyers who know what the old product felt like, and sales pitch drift. All four survive a rate-card change.</p></div>
+      <div class="note note--info"><p><strong>Sequencing.</strong> Run Intensive at launch — it works at family #1 and needs no cohort scheduling. Move to Rover when demand is dense enough that cohorts reliably fill at 3, not on a date. Below 2.55 rooms Rover is worse than Intensive; solo delivery lands 19.6 points under the product it replaces.</p></div>
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+<footer class="colophon">
+  <div class="wrap">
+    <h3>Basis</h3>
+    <p style="color:var(--text-3)">PT $70/hr PRN 1099 · wellness coach $30/hr 1099 · Rover support coach $25/hr · MD $500/hr · device and supplement costs per NeuroHome Inventory master · NeuroSage Hub carried at $0 COGS, $50/mo family subscription · design rationale, not a legal opinion; nothing in this document has been reviewed by counsel.</p>
+
+    <h3 style="margin-top:26px">Revisions</h3>
+    <div class="rev"><span class="rev-tag">v5.0.0</span><span class="rev-date">August 20, 2026</span><strong>Final architecture. Two products plus a scale model.</strong> Clinical Intensive <strong>$13,000 / 57.5%</strong> (COGS $5,526) — PT $70/hr for 45 hrs, MD $500/hr for 1 hr split along scope lines, stool panel and all four supplements in base. Wellness <strong>$5,000 / 78.6%</strong> (COGS $1,071) — 8 weeks, 20 sessions tapered 3×/wk then 2×/wk, 8-item kit, no labs or supplements or MD or estim. Clinical Rover <strong>$13,000 / 62.1%</strong> at full pod, marked future-state pending counsel. Hub set at <strong>$50/mo</strong>. Lab ladder completed with Total Tox Burden ($1,995/$700) and Neural Zoomer Plus ($1,295/$450). Kit retail reference added as internal-only, flagged unsubstantiated. SaeboStim under device review; higher-output laser blocked.</div>
+    <div class="rev"><span class="rev-tag">v4.0.x</span><span class="rev-date">August 2026</span>Regulatory review pass. MD/PT authority rewritten along scope lines. Clinical claims separated from efficacy substantiation. Wellness frame corrected — FDA general-wellness guidance is a device policy, not a service safe harbor; the prohibited thing is clinical individualization, not personalization. Light language changed from "dose" to manufacturer-consistent duration. Rover delivery language corrected to synchronous treatment at PT touchpoints, and the 15-hour attention figure surfaced against Intensive's 45.</div>
+    <div class="rev"><span class="rev-tag">v2.6.0</span><span class="rev-date">July 30, 2026</span>Cut MD from all plans. Plan A $11,500 at 63.3% on 68 concierge hours at $25/hr. Left an unresolved gap: labs shipped in every plan with no clinician budgeted to order or interpret them. Closed in v4.0.0 by restoring a costed MD hour to every clinical product.</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+  var names = tabs.map(function(t){ return t.dataset.panel; });
+
+  function select(name, focus){
+    if(names.indexOf(name) === -1) return;
+    tabs.forEach(function(tab){
+      var on = tab.dataset.panel === name;
+      tab.setAttribute('aria-selected', on);
+      tab.tabIndex = on ? 0 : -1;
+      document.getElementById('panel-' + tab.dataset.panel).hidden = !on;
+      if(on && focus) tab.focus();
+    });
+    if(location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
+    window.scrollTo(0, 0);
+  }
+
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){ select(tab.dataset.panel); });
+    tab.addEventListener('keydown', function(e){
+      var i = names.indexOf(tab.dataset.panel), next = null;
+      if(e.key === 'ArrowRight') next = names[(i + 1) % names.length];
+      else if(e.key === 'ArrowLeft') next = names[(i - 1 + names.length) % names.length];
+      else if(e.key === 'Home') next = names[0];
+      else if(e.key === 'End') next = names[names.length - 1];
+      if(next){ e.preventDefault(); select(next, true); }
+    });
+  });
+
+  window.addEventListener('hashchange', function(){ select(location.hash.slice(1)); });
+  select(location.hash.slice(1) || 'overview');
+})();
+</script>
+</body>
+</html>
