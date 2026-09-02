@@ -426,7 +426,18 @@ function inlineAssets(src) {
 }
 
 /* Empty the constants as well as stubbing the transport. Either alone would do;
-   both means a future edit has to defeat two independent guards to leak. */
+   both means a future edit has to defeat two independent guards to leak.
+
+   The intake thank-you's "Book my call" CTA is a fourth leak of the same kind: not
+   a webhook but a live GHL booking calendar, one click from putting a reviewer on
+   Dr. Kyle's real diary. The button has to keep rendering, because it IS the point
+   of stage 6, so the href is swapped rather than the anchor removed.
+
+   It is swapped for a relative sentinel, not emptied. GUARD_LINKS maps '' to the
+   landing stage, so href="" would send a click back to stage 1 instead of nowhere.
+   A page name with no stage of its own falls through to the guard's swallow-and-log
+   branch, which is the behaviour wanted: preventDefault, no navigation, a console
+   line naming what was clicked. */
 function deadenWebhooks(src) {
   return src
     .replace(/const LEAD_WEBHOOK_URL = '[^']*'/,
@@ -434,7 +445,12 @@ function deadenWebhooks(src) {
     .replace(/const GHL_WEBHOOK_URL = '[^']*'/,
              "const GHL_WEBHOOK_URL = '' /* emptied for the journey preview */")
     .replace(/const INTAKE_PROGRESS_WEBHOOK_URL = '[^']*'/,
-             "const INTAKE_PROGRESS_WEBHOOK_URL = '' /* emptied for the journey preview */");
+             "const INTAKE_PROGRESS_WEBHOOK_URL = '' /* emptied for the journey preview */")
+    /* target="_blank" goes with it. The stages are not sandboxed, so if the guard
+       ever fails to install, a blank target is the one thing that would still open
+       a real tab. */
+    .replace(/href="https:\/\/api\.leadconnectorhq\.com\/widget\/booking\/[^"]*"(?:\s+target="_blank")?(?:\s+rel="noopener")?/g,
+             'href="book-my-call" data-journey-preview="booking calendar removed"');
 }
 
 function addGuard(src) {
@@ -890,7 +906,7 @@ const STAGES = [
      intake, and the walkthrough should read in that order. */
   { id: 'funnel',   n: 4, name: 'The funnel',    note: 'The 10-day nurture sequence. Every touch drives the intake.',   html: buildFunnel() },
   { id: 'intake',   n: 5, name: 'Intake form',   note: `121 questions across 12 sections, plus history. Filled in for one family, still editable.`,   html: buildIntake() },
-  { id: 'submitted', n: 6, name: 'Intake submitted', note: 'What a family sees after sending the intake. Review my answers opens the read-only view.', html: buildIntakeThanks() },
+  { id: 'submitted', n: 6, name: 'Intake submitted', note: 'What a family sees after sending the intake. Book my call is the next step, live-looking but inert here. Review my answers opens the read-only view.', html: buildIntakeThanks() },
   /* The email comes before the letter because that is the order a family meets
      them: the email arrives, the attachment gets opened. Two stages rather than one
      with a reveal inside it, and not for want of trying: the letter is a complete
@@ -929,6 +945,7 @@ try {
 STAGES.forEach(s => {
   if (/<\/?template/i.test(s.html)) throw new Error(`${s.id}: contains a template tag, which would break its container`);
   if (/leadconnectorhq\.com\/hooks/.test(s.html)) throw new Error(`${s.id}: still contains a live webhook URL`);
+  if (/widget\/booking/.test(s.html)) throw new Error(`${s.id}: still contains the booking calendar`);
 });
 
 const shell = `<!DOCTYPE html>

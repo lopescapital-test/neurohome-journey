@@ -1612,7 +1612,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--brand-deep); ou
 .kyle-content { display: flex; flex-direction: column; gap: 22px; }
 .kyle-name { font-family: 'Outfit', sans-serif; font-size: clamp(28px,3.5vw,42px); font-weight: 800; color: var(--text); letter-spacing: -1px; line-height: 1.1; margin-bottom: 4px; }
 .kyle-name-suffix { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--brand-text); letter-spacing: 1px; }
-.kyle-bio { font-size: 16px; color: var(--text-2); line-height: 1.75; }
+.kyle-bio { font-size: clamp(16px,1.7vw,18px); color: var(--text-2); line-height: 1.75; }
 .kyle-bio strong { color: var(--text); font-weight: 600; }
 .kyle-credentials { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
 .kyle-cred { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); transition: border-color 0.25s; }
@@ -2203,6 +2203,179 @@ body.reel-lock { overflow: hidden; }
 .sticky-cta .btn-primary { flex: 1; justify-content: center; padding: 14px 20px; font-size: 15px; }
 
 /* =====================================================
+   The NeuroSage family (#family)
+   Three-tier stepper: Hub / NeuroHome / NeuroSage Centers.
+
+   Ported from the "NeuroSage Family Section" design export, which shipped as
+   React + DCLogic with 100% inline styles on its own blue-grey palette
+   (#1D2939 / #667085 / #98A2B3) and three near-identical tier hues. Rebuilt
+   here on the existing tokens so the site keeps one grey family, and driven by
+   the shared [data-step]/[data-go] stepper in neurohome.js.
+
+   The design's #98A2B3 micro-label grey measured 2.58:1 on white and failed
+   AA in five places; --text-3 replaces it at 5.35:1. The three tier hues were
+   only 1.98:1 apart from each other and the accessible fix made them closer
+   still, so the active tab is one --ink-navy treatment (14.48:1) and the tier
+   is identified by its own label instead of by hue.
+
+   Panel visibility is gated on html.js rather than on [hidden] alone, so all
+   three tiers stay readable with JavaScript off. See the html:not(.js) rules
+   near the end of this block.
+   ===================================================== */
+#family .conditions-headline { font-size: clamp(28px,3.6vw,46px); max-width: none; }
+/* Span the full container so the lede lines up with the panel edge below it. */
+#family .section-sub { max-width: none; }
+
+.family-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); overflow: hidden; display: grid; grid-template-columns: minmax(0,0.62fr) minmax(0,1fr); }
+/* An author `display` declaration outranks the UA [hidden] rule, so setting
+   display:grid above silently defeats the hidden attribute and every tier
+   renders at once. This puts [hidden] back. */
+.family-panel[hidden] { display: none; }
+.family-brand { padding: clamp(28px,3vw,44px); display: flex; flex-direction: column; gap: 26px; border-right: 1px solid var(--border); background: var(--bg); }
+.family-brand.is-dark { background: var(--ink-navy); border-right-color: rgba(250,250,250,0.14); }
+.family-logo { min-height: 64px; display: flex; align-items: center; }
+.family-logo img { display: block; width: 200px; max-width: 100%; height: auto; }
+.family-wordmark { font-family: 'Outfit', sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); display: inline-flex; align-items: center; gap: 14px; }
+/* The committed nav mark cyan (b6b2a57), deliberately not --brand #00CEFD. */
+.family-wordmark b { font-weight: inherit; color: #00C2FF; }
+.family-wordmark img { width: 46px; height: 46px; display: block; flex: none; }
+.family-meta { display: flex; flex-direction: column; gap: 6px; }
+.family-setting { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brand-text); }
+.family-format { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-2); }
+.family-brand.is-dark .family-wordmark { color: var(--text-inv); }
+.family-brand.is-dark .family-setting { color: #00C2FF; }
+.family-brand.is-dark .family-format { color: var(--text-inv); }
+/* All three tiers now carry logo + meta + figure. justify-content:space-between
+   is gone: it was compensating for tier 01 and 02 having no figure, and with the
+   figures restored it stretched the panel and opened a dead gap mid-column.
+
+   Instead the figure wrapper takes the leftover height and centres the graphic
+   in it, which is what the source design did (flex:1 + align-items:center on its
+   graphic slot) and what I dropped on the first port. Without it the left column
+   ran 143-235px short of the right one and dumped all of it at the bottom. */
+/* Figure sits directly under logo + meta at its natural height. It no longer
+   takes flex:1 - the CLINICIAN TIME block below does, via margin-top:auto, so
+   leftover height collects between the figure and that block instead of being
+   centred around the graphic.
+
+   240px -> 320px: the brand column content box is ~366px at 1280, so 320 fills
+   it without reaching the padding edge. On the 268-unit tier 01/02 viewBoxes the
+   scale goes 0.896 -> 1.194, which lifts their 10px mono labels from ~9px to
+   ~12px effective and is the real reason for the change. */
+.family-fig { display: flex; align-items: flex-start; }
+.family-fig img { display: block; width: 100%; max-width: 320px; height: auto; }
+.family-fig svg { display: block; width: 100%; max-width: 320px; height: auto; overflow: visible; }
+
+/* Tier figure ink. Container chrome is deliberately faint, matching the four
+   method figures in index.html which stroke their own chrome at 1.17-1.53:1;
+   the icon strokes and labels are the parts that carry meaning and those are
+   graded as text. Light-panel values first, dark-panel overrides below. */
+.ffig-lab { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 1.4px; fill: var(--text-2); }
+.ffig-lab-sm { font-size: 9px; }
+.ffig-lab-xs { font-size: 8.5px; }
+.ffig-box { fill: none; stroke: var(--border-hover); stroke-width: 1; }
+.ffig-ico { fill: none; stroke: var(--brand-text); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ffig-dot { fill: var(--brand-text); stroke: none; }
+
+/* Dark panel (tier 02). --text-inv is 13.87:1 on --ink-navy, so the source
+   opacities survive: 0.75 gives 8.44:1 and 0.70 gives 7.52:1, both past AA. */
+.family-brand.is-dark .ffig-box { stroke: rgba(250,250,250,0.22); }
+.family-brand.is-dark .ffig-lab { fill: var(--text-inv); }
+.ffig-screen { fill: rgba(0,194,255,0.10); stroke: #00C2FF; stroke-width: 1; }
+.ffig-accent { fill: none; stroke: #00C2FF; stroke-width: 1.6; stroke-linecap: round; }
+.ffig-live { fill: var(--accent-red); stroke: none; }
+.ffig-ico-ink { fill: none; stroke: var(--text-inv); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; opacity: 0.75; }
+.ffig-dash { fill: none; stroke: rgba(250,250,250,0.22); stroke-width: 1.5; stroke-dasharray: 3 4; }
+.ffig-o75 { opacity: 0.75; }
+.ffig-o70 { opacity: 0.7; }
+
+/* CLINICIAN TIME meter, ported from the source design. margin-top:auto pins it
+   to the bottom of the brand column, which is what absorbs the leftover height
+   the figure used to. Filled segments carry the value and are graded as UI
+   indicators (>=3:1); the empty track is chrome, same precedent as the figure
+   outlines and the method figures at 1.17-1.53:1. */
+.family-access { margin-top: auto; border-top: 1px solid var(--border); padding-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+.family-brand.is-dark .family-access { border-top-color: rgba(250,250,250,0.16); }
+.family-access-l { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-3); }
+.family-brand.is-dark .family-access-l { color: var(--text-inv); opacity: 0.7; }
+.family-access-bar { display: flex; gap: 6px; align-items: center; }
+/* Intensity note under the meter. Source used a single mid grey for both the
+   label and this line; --text-3 is 5.12:1 on --bg and the dark variant lands at
+   7.52:1, so the pair is differentiated by type, not by contrast. */
+.family-access-note { font-size: 13.5px; line-height: 1.5; color: var(--text-3); margin: 0; }
+.family-brand.is-dark .family-access-note { color: var(--text-inv); opacity: 0.7; }
+.family-access-seg { width: 34px; height: 5px; border-radius: 3px; background: var(--border-hover); }
+.family-access-seg.on { background: var(--brand-text); }
+.family-brand.is-dark .family-access-seg { background: rgba(250,250,250,0.22); }
+.family-brand.is-dark .family-access-seg.on { background: #00C2FF; }
+
+.family-body { padding: clamp(28px,3.4vw,52px); display: flex; flex-direction: column; gap: 22px; }
+.family-purpose { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brand-text); }
+.family-h3 { font-family: 'Outfit', sans-serif; font-size: clamp(24px,2.8vw,36px); font-weight: 800; line-height: 1.12; letter-spacing: -0.02em; color: var(--text); margin: 0; }
+.family-p { font-size: 16.5px; line-height: 1.72; color: var(--text-2); margin: 0; }
+.family-facts { border-top: 1px solid var(--border); margin: 0; }
+.family-fact { display: grid; grid-template-columns: 160px minmax(0,1fr); gap: 24px; align-items: baseline; padding: 15px 0; border-bottom: 1px solid var(--border); }
+.family-fact:last-child { border-bottom: none; }
+.family-fact dt { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); }
+.family-fact dd { font-size: 16.5px; line-height: 1.5; color: var(--text); margin: 0; }
+
+.family-foot { margin-top: auto; border-top: 1px solid var(--border); padding-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+/* The arrows are now the only way through the tiers, so this stops reading as a
+   footnote: the eyebrow takes the --brand-text accent that signals interactive
+   elsewhere on the page (4.93:1 on --bg-card) and goes 10px -> 11px, and the
+   destination title goes 16px -> 19px so the pair carries the same weight as the
+   arrow buttons beside it. */
+.family-next-l { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brand-text); display: block; margin-bottom: 3px; }
+.family-next-t { font-family: 'Outfit', sans-serif; font-size: 19px; font-weight: 700; letter-spacing: -0.015em; color: var(--text); }
+.family-nav { display: flex; gap: 10px; flex: none; }
+
+/* neurohome.css declares no global anchor styling (only a:focus-visible at :188),
+   so an unstyled link in body copy renders browser-default blue. The legal pages
+   solve this with their own inline rule on --brand-deep, but that measures 3.31:1
+   on white and fails AA, so this uses --brand-text at 4.93:1. */
+.family-p a { color: var(--brand-text); text-decoration: underline; text-underline-offset: 3px; }
+.family-p a:hover { color: var(--text); }
+
+.family-note { font-size: 15px; line-height: 1.65; color: var(--text-2); margin: 18px 0 0; max-width: 860px; }
+
+/* JS off: there is no stepper, so show every tier stacked and drop the dead
+   controls. html.js is set before first paint (index.html head), so with JS
+   live the open tier is correct from the first frame and nothing flashes. */
+html:not(.js) .family-panel[hidden] { display: grid; }
+html:not(.js) .family-panel + .family-panel { margin-top: 18px; }
+html:not(.js) .family-foot { display: none; }
+
+/* The same fix for the older #method stepper, which had the JS-off gap this
+   pattern was built to close: with neurohome.js absent nothing can advance it,
+   so steps 02-04 and the closer were unreachable.
+
+   #method already restores [hidden] at :818 with "display: none !important",
+   its own answer to the same cascade problem, so overriding that needs
+   !important at higher specificity:
+     #method [hidden]                          (1,1,0) !important
+     html:not(.js) #method .mth-step[hidden]   (1,3,1) !important  <- wins
+
+   .mth-step is display:grid and .mth-closer is display:flex, so each needs its
+   own value rather than one shared rule. The navigation goes away because with
+   every step stacked the "Next" labels and arrows are dead controls. */
+html:not(.js) #method .mth-step[hidden] { display: grid !important; }
+html:not(.js) #method .mth-closer[hidden] { display: flex !important; }
+html:not(.js) #method .mth-nav,
+html:not(.js) #method .mth-closer .mth-back-btn { display: none; }
+
+/* Matches .mth-step's collapse point so the two steppers break together. */
+@media (max-width: 1100px) {
+  .family-panel { grid-template-columns: 1fr; }
+  .family-brand { border-right: none; border-bottom: 1px solid var(--border); }
+  .family-brand.is-dark { border-bottom-color: rgba(250,250,250,0.14); }
+  .family-fig { margin-top: 0; }
+}
+@media (max-width: 760px) {
+  .family-fact { grid-template-columns: 1fr; gap: 6px; }
+  .family-foot { flex-direction: column; align-items: flex-start; }
+}
+
+/* =====================================================
    FAQ
    ===================================================== */
 .faq-list { display: flex; flex-direction: column; gap: 10px; max-width: 100%; }
@@ -2279,9 +2452,17 @@ body.reel-lock { overflow: hidden; }
 /* =====================================================
    Responsive
    ===================================================== */
-@media (max-width: 900px) {
+/* The nav collapses earlier than the rest of the responsive block. Seven items
+   plus the CTA stop fitting the 72px bar below ~1080px: links wrap to two lines
+   while the bar height is fixed. The other 22 rules in the 900px block below are
+   unrelated layout collapses (hero, footer, grids, sticky CTA) and deliberately
+   keep their own threshold, so only the two nav rules move here. */
+@media (max-width: 1080px) {
   .nav-links { display: none; }
   .nav-mobile-toggle { display: block; }
+}
+
+@media (max-width: 900px) {
   .steps-grid { grid-template-columns: 1fr; }
   .features-grid { grid-template-columns: 1fr; }
   .protocol-grid { grid-template-columns: 1fr; }
@@ -2336,7 +2517,7 @@ body.reel-lock { overflow: hidden; }
 <!-- Social share (Open Graph + Twitter). Absolute URLs point at the Vercel
      production domain. Update these if a custom domain is added later. -->
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="NeuroHome by NeuroSage Centers">
+<meta property="og:site_name" content="NeuroHome by NeuroSage Hub">
 <meta property="og:title" content="NeuroHome: In-Home Therapy for Children with Autism">
 <meta property="og:description" content="An 8-week, clinician-guided in-home program for children with autism and developmental challenges. Drug-free, lab-informed, delivered to your home. Led by Dr. Kyle Daigle.">
 <meta property="og:url" content="https://neurohome-landing.vercel.app/">
@@ -2353,8 +2534,8 @@ body.reel-lock { overflow: hidden; }
   "name": "NeuroHome",
   "description": "An 8-week, clinician-guided in-home program for children with autism and developmental challenges.",
   "url": "https://neurohome-landing.vercel.app/",
-  "email": "hello@neurohome.com",
-  "parentOrganization": { "@type": "Organization", "name": "NeuroSage Centers" },
+  "email": "hello@mail.neurohome.app",
+  "parentOrganization": { "@type": "Organization", "name": "NeuroSage Hub" },
   "founder": { "@type": "Person", "name": "Dr. Kyle Daigle", "honorificSuffix": "DC, FIBFN-CND" },
   "medicalSpecialty": "Neurologic"
 }
@@ -2406,26 +2587,27 @@ body.reel-lock { overflow: hidden; }
 
 
 <nav class="nav" id="nav">
-  <a class="nav-brand" href="#top" aria-label="NeuroHome by NeuroSage Centers">
+  <a class="nav-brand" href="#top" aria-label="NeuroHome by NeuroSage Hub">
     <svg class="nav-brand-mark" width="44" height="44" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect x="8" y="22" width="36" height="27" rx="3" stroke="#1D2939" stroke-width="2.2" fill="none"/>
       <path d="M 4 24 L 26 5 L 48 24" stroke="#1D2939" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-      <rect x="20" y="34" width="12" height="15" rx="1.5" stroke="#1D2939" stroke-width="1.5" fill="rgba(0,206,253,0.06)"/>
-      <circle cx="8" cy="22" r="3" fill="#00CEFD"/>
-      <circle cx="44" cy="22" r="3" fill="#00CEFD"/>
-      <circle cx="8" cy="49" r="3" fill="#00CEFD"/>
-      <circle cx="44" cy="49" r="3" fill="#00CEFD"/>
-      <circle cx="26" cy="5" r="3" fill="#00CEFD"/>
+      <rect x="20" y="34" width="12" height="15" rx="1.5" stroke="#1D2939" stroke-width="1.5" fill="rgba(0,194,255,0.06)"/>
+      <circle cx="8" cy="22" r="3" fill="#00C2FF"/>
+      <circle cx="44" cy="22" r="3" fill="#00C2FF"/>
+      <circle cx="8" cy="49" r="3" fill="#00C2FF"/>
+      <circle cx="44" cy="49" r="3" fill="#00C2FF"/>
+      <circle cx="26" cy="5" r="3" fill="#00C2FF"/>
     </svg>
     <span class="nav-brand-wordmark">
       <span class="nav-brand-name">Neuro<span>Home</span></span>
-      <span class="nav-brand-tag">by NeuroSage Centers</span>
+      <span class="nav-brand-tag">by NeuroSage Hub</span>
     </span>
   </a>
   <div class="nav-links" id="navLinks">
     <a class="nav-link" href="#dr-kyle">Dr. Kyle</a>
     <a class="nav-link" href="#method">Our Approach</a>
     <a class="nav-link" href="#testimonials">Results</a>
+    <a class="nav-link" href="#family">NeuroSage Hub</a>
     <a class="nav-link" href="#faq">FAQ</a>
     <a class="nav-link" href="https://neurohome-app.vercel.app/login">Family Login</a>
     <a class="nav-cta" href="start.html">Start your child's plan</a>
@@ -2557,26 +2739,59 @@ function toggleFaq(el) {
   }
 }
 
-// ========== THE METHOD - stepper ==========
-// State: one integer `open`, 1-4. Step 01 shows by default; one step shows at a
-// time (swap in place); the right-side "Next" arrow advances to open + 1.
-(function () {
-  const root = document.getElementById('method');
-  if (!root || !root.querySelector('[data-step]')) return;
-  let open = 1;
+// ========== STEPPERS ==========
+// State: one integer `open` per root. One [data-step] shows at a time (swap in
+// place); any [data-go] button inside the root jumps to that index.
+//
+// Two callers, one implementation:
+//   #method  - 4 steps, opens on 01, has a [data-closer] that appears on the
+//              last step only.
+//   #family  - 3 tiers, opens on 02 via [data-stepper-open] because NeuroHome
+//              is what this site sells, and mirrors state onto [data-tab]
+//              buttons through aria-selected.
+//
+// A root is found either by being #method (kept as-is so its markup did not
+// have to change) or by carrying [data-stepper]. New steppers should use the
+// attribute; the #method lookup is here only to avoid touching working markup.
+//
+// Panels carry the `hidden` attribute in markup, so with JS live the correct
+// one is showing from the first paint. CSS under html:not(.js) reveals them all
+// when scripting is off - see the .family-* block in neurohome.css.
+function initStepper(root) {
+  if (!root) return;
+  // Idempotent: #method is initialised by id and #family by attribute, so a
+  // root that ever gains both would otherwise bind two click handlers.
+  if (root.dataset.stepperReady) return;
+  const steps = root.querySelectorAll('[data-step]');
+  if (!steps.length) return;
+  root.dataset.stepperReady = '1';
+
+  const first = +root.dataset.stepperOpen || 1;
+  let open = first;
+
   function render() {
-    root.querySelectorAll('[data-step]').forEach(el => { el.hidden = +el.dataset.step !== open; });
+    steps.forEach(el => { el.hidden = +el.dataset.step !== open; });
+    // Only #method has a closer; it belongs to the final step.
     const closer = root.querySelector('[data-closer]');
-    if (closer) closer.hidden = open !== 4;
+    if (closer) closer.hidden = open !== steps.length;
+    // Only #family has tabs; harmless no-op elsewhere.
+    root.querySelectorAll('[data-tab]').forEach(tab => {
+      tab.setAttribute('aria-selected', String(+tab.dataset.tab === open));
+    });
   }
+
   root.addEventListener('click', e => {
     const btn = e.target.closest('[data-go]');
-    if (!btn) return;
+    if (!btn || !root.contains(btn)) return;
     open = +btn.dataset.go;
     render();
   });
+
   render();
-})();
+}
+
+initStepper(document.getElementById('method'));
+document.querySelectorAll('[data-stepper]').forEach(initStepper);
 
 // ========== SMOOTH SCROLL ==========
 document.querySelectorAll('a[href^="#"]').forEach(a => {
@@ -3150,7 +3365,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--brand-deep); ou
 .kyle-content { display: flex; flex-direction: column; gap: 22px; }
 .kyle-name { font-family: 'Outfit', sans-serif; font-size: clamp(28px,3.5vw,42px); font-weight: 800; color: var(--text); letter-spacing: -1px; line-height: 1.1; margin-bottom: 4px; }
 .kyle-name-suffix { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--brand-text); letter-spacing: 1px; }
-.kyle-bio { font-size: 16px; color: var(--text-2); line-height: 1.75; }
+.kyle-bio { font-size: clamp(16px,1.7vw,18px); color: var(--text-2); line-height: 1.75; }
 .kyle-bio strong { color: var(--text); font-weight: 600; }
 .kyle-credentials { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
 .kyle-cred { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); transition: border-color 0.25s; }
@@ -3741,6 +3956,179 @@ body.reel-lock { overflow: hidden; }
 .sticky-cta .btn-primary { flex: 1; justify-content: center; padding: 14px 20px; font-size: 15px; }
 
 /* =====================================================
+   The NeuroSage family (#family)
+   Three-tier stepper: Hub / NeuroHome / NeuroSage Centers.
+
+   Ported from the "NeuroSage Family Section" design export, which shipped as
+   React + DCLogic with 100% inline styles on its own blue-grey palette
+   (#1D2939 / #667085 / #98A2B3) and three near-identical tier hues. Rebuilt
+   here on the existing tokens so the site keeps one grey family, and driven by
+   the shared [data-step]/[data-go] stepper in neurohome.js.
+
+   The design's #98A2B3 micro-label grey measured 2.58:1 on white and failed
+   AA in five places; --text-3 replaces it at 5.35:1. The three tier hues were
+   only 1.98:1 apart from each other and the accessible fix made them closer
+   still, so the active tab is one --ink-navy treatment (14.48:1) and the tier
+   is identified by its own label instead of by hue.
+
+   Panel visibility is gated on html.js rather than on [hidden] alone, so all
+   three tiers stay readable with JavaScript off. See the html:not(.js) rules
+   near the end of this block.
+   ===================================================== */
+#family .conditions-headline { font-size: clamp(28px,3.6vw,46px); max-width: none; }
+/* Span the full container so the lede lines up with the panel edge below it. */
+#family .section-sub { max-width: none; }
+
+.family-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); overflow: hidden; display: grid; grid-template-columns: minmax(0,0.62fr) minmax(0,1fr); }
+/* An author `display` declaration outranks the UA [hidden] rule, so setting
+   display:grid above silently defeats the hidden attribute and every tier
+   renders at once. This puts [hidden] back. */
+.family-panel[hidden] { display: none; }
+.family-brand { padding: clamp(28px,3vw,44px); display: flex; flex-direction: column; gap: 26px; border-right: 1px solid var(--border); background: var(--bg); }
+.family-brand.is-dark { background: var(--ink-navy); border-right-color: rgba(250,250,250,0.14); }
+.family-logo { min-height: 64px; display: flex; align-items: center; }
+.family-logo img { display: block; width: 200px; max-width: 100%; height: auto; }
+.family-wordmark { font-family: 'Outfit', sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); display: inline-flex; align-items: center; gap: 14px; }
+/* The committed nav mark cyan (b6b2a57), deliberately not --brand #00CEFD. */
+.family-wordmark b { font-weight: inherit; color: #00C2FF; }
+.family-wordmark img { width: 46px; height: 46px; display: block; flex: none; }
+.family-meta { display: flex; flex-direction: column; gap: 6px; }
+.family-setting { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brand-text); }
+.family-format { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-2); }
+.family-brand.is-dark .family-wordmark { color: var(--text-inv); }
+.family-brand.is-dark .family-setting { color: #00C2FF; }
+.family-brand.is-dark .family-format { color: var(--text-inv); }
+/* All three tiers now carry logo + meta + figure. justify-content:space-between
+   is gone: it was compensating for tier 01 and 02 having no figure, and with the
+   figures restored it stretched the panel and opened a dead gap mid-column.
+
+   Instead the figure wrapper takes the leftover height and centres the graphic
+   in it, which is what the source design did (flex:1 + align-items:center on its
+   graphic slot) and what I dropped on the first port. Without it the left column
+   ran 143-235px short of the right one and dumped all of it at the bottom. */
+/* Figure sits directly under logo + meta at its natural height. It no longer
+   takes flex:1 - the CLINICIAN TIME block below does, via margin-top:auto, so
+   leftover height collects between the figure and that block instead of being
+   centred around the graphic.
+
+   240px -> 320px: the brand column content box is ~366px at 1280, so 320 fills
+   it without reaching the padding edge. On the 268-unit tier 01/02 viewBoxes the
+   scale goes 0.896 -> 1.194, which lifts their 10px mono labels from ~9px to
+   ~12px effective and is the real reason for the change. */
+.family-fig { display: flex; align-items: flex-start; }
+.family-fig img { display: block; width: 100%; max-width: 320px; height: auto; }
+.family-fig svg { display: block; width: 100%; max-width: 320px; height: auto; overflow: visible; }
+
+/* Tier figure ink. Container chrome is deliberately faint, matching the four
+   method figures in index.html which stroke their own chrome at 1.17-1.53:1;
+   the icon strokes and labels are the parts that carry meaning and those are
+   graded as text. Light-panel values first, dark-panel overrides below. */
+.ffig-lab { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 1.4px; fill: var(--text-2); }
+.ffig-lab-sm { font-size: 9px; }
+.ffig-lab-xs { font-size: 8.5px; }
+.ffig-box { fill: none; stroke: var(--border-hover); stroke-width: 1; }
+.ffig-ico { fill: none; stroke: var(--brand-text); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ffig-dot { fill: var(--brand-text); stroke: none; }
+
+/* Dark panel (tier 02). --text-inv is 13.87:1 on --ink-navy, so the source
+   opacities survive: 0.75 gives 8.44:1 and 0.70 gives 7.52:1, both past AA. */
+.family-brand.is-dark .ffig-box { stroke: rgba(250,250,250,0.22); }
+.family-brand.is-dark .ffig-lab { fill: var(--text-inv); }
+.ffig-screen { fill: rgba(0,194,255,0.10); stroke: #00C2FF; stroke-width: 1; }
+.ffig-accent { fill: none; stroke: #00C2FF; stroke-width: 1.6; stroke-linecap: round; }
+.ffig-live { fill: var(--accent-red); stroke: none; }
+.ffig-ico-ink { fill: none; stroke: var(--text-inv); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; opacity: 0.75; }
+.ffig-dash { fill: none; stroke: rgba(250,250,250,0.22); stroke-width: 1.5; stroke-dasharray: 3 4; }
+.ffig-o75 { opacity: 0.75; }
+.ffig-o70 { opacity: 0.7; }
+
+/* CLINICIAN TIME meter, ported from the source design. margin-top:auto pins it
+   to the bottom of the brand column, which is what absorbs the leftover height
+   the figure used to. Filled segments carry the value and are graded as UI
+   indicators (>=3:1); the empty track is chrome, same precedent as the figure
+   outlines and the method figures at 1.17-1.53:1. */
+.family-access { margin-top: auto; border-top: 1px solid var(--border); padding-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+.family-brand.is-dark .family-access { border-top-color: rgba(250,250,250,0.16); }
+.family-access-l { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-3); }
+.family-brand.is-dark .family-access-l { color: var(--text-inv); opacity: 0.7; }
+.family-access-bar { display: flex; gap: 6px; align-items: center; }
+/* Intensity note under the meter. Source used a single mid grey for both the
+   label and this line; --text-3 is 5.12:1 on --bg and the dark variant lands at
+   7.52:1, so the pair is differentiated by type, not by contrast. */
+.family-access-note { font-size: 13.5px; line-height: 1.5; color: var(--text-3); margin: 0; }
+.family-brand.is-dark .family-access-note { color: var(--text-inv); opacity: 0.7; }
+.family-access-seg { width: 34px; height: 5px; border-radius: 3px; background: var(--border-hover); }
+.family-access-seg.on { background: var(--brand-text); }
+.family-brand.is-dark .family-access-seg { background: rgba(250,250,250,0.22); }
+.family-brand.is-dark .family-access-seg.on { background: #00C2FF; }
+
+.family-body { padding: clamp(28px,3.4vw,52px); display: flex; flex-direction: column; gap: 22px; }
+.family-purpose { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brand-text); }
+.family-h3 { font-family: 'Outfit', sans-serif; font-size: clamp(24px,2.8vw,36px); font-weight: 800; line-height: 1.12; letter-spacing: -0.02em; color: var(--text); margin: 0; }
+.family-p { font-size: 16.5px; line-height: 1.72; color: var(--text-2); margin: 0; }
+.family-facts { border-top: 1px solid var(--border); margin: 0; }
+.family-fact { display: grid; grid-template-columns: 160px minmax(0,1fr); gap: 24px; align-items: baseline; padding: 15px 0; border-bottom: 1px solid var(--border); }
+.family-fact:last-child { border-bottom: none; }
+.family-fact dt { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); }
+.family-fact dd { font-size: 16.5px; line-height: 1.5; color: var(--text); margin: 0; }
+
+.family-foot { margin-top: auto; border-top: 1px solid var(--border); padding-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+/* The arrows are now the only way through the tiers, so this stops reading as a
+   footnote: the eyebrow takes the --brand-text accent that signals interactive
+   elsewhere on the page (4.93:1 on --bg-card) and goes 10px -> 11px, and the
+   destination title goes 16px -> 19px so the pair carries the same weight as the
+   arrow buttons beside it. */
+.family-next-l { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brand-text); display: block; margin-bottom: 3px; }
+.family-next-t { font-family: 'Outfit', sans-serif; font-size: 19px; font-weight: 700; letter-spacing: -0.015em; color: var(--text); }
+.family-nav { display: flex; gap: 10px; flex: none; }
+
+/* neurohome.css declares no global anchor styling (only a:focus-visible at :188),
+   so an unstyled link in body copy renders browser-default blue. The legal pages
+   solve this with their own inline rule on --brand-deep, but that measures 3.31:1
+   on white and fails AA, so this uses --brand-text at 4.93:1. */
+.family-p a { color: var(--brand-text); text-decoration: underline; text-underline-offset: 3px; }
+.family-p a:hover { color: var(--text); }
+
+.family-note { font-size: 15px; line-height: 1.65; color: var(--text-2); margin: 18px 0 0; max-width: 860px; }
+
+/* JS off: there is no stepper, so show every tier stacked and drop the dead
+   controls. html.js is set before first paint (index.html head), so with JS
+   live the open tier is correct from the first frame and nothing flashes. */
+html:not(.js) .family-panel[hidden] { display: grid; }
+html:not(.js) .family-panel + .family-panel { margin-top: 18px; }
+html:not(.js) .family-foot { display: none; }
+
+/* The same fix for the older #method stepper, which had the JS-off gap this
+   pattern was built to close: with neurohome.js absent nothing can advance it,
+   so steps 02-04 and the closer were unreachable.
+
+   #method already restores [hidden] at :818 with "display: none !important",
+   its own answer to the same cascade problem, so overriding that needs
+   !important at higher specificity:
+     #method [hidden]                          (1,1,0) !important
+     html:not(.js) #method .mth-step[hidden]   (1,3,1) !important  <- wins
+
+   .mth-step is display:grid and .mth-closer is display:flex, so each needs its
+   own value rather than one shared rule. The navigation goes away because with
+   every step stacked the "Next" labels and arrows are dead controls. */
+html:not(.js) #method .mth-step[hidden] { display: grid !important; }
+html:not(.js) #method .mth-closer[hidden] { display: flex !important; }
+html:not(.js) #method .mth-nav,
+html:not(.js) #method .mth-closer .mth-back-btn { display: none; }
+
+/* Matches .mth-step's collapse point so the two steppers break together. */
+@media (max-width: 1100px) {
+  .family-panel { grid-template-columns: 1fr; }
+  .family-brand { border-right: none; border-bottom: 1px solid var(--border); }
+  .family-brand.is-dark { border-bottom-color: rgba(250,250,250,0.14); }
+  .family-fig { margin-top: 0; }
+}
+@media (max-width: 760px) {
+  .family-fact { grid-template-columns: 1fr; gap: 6px; }
+  .family-foot { flex-direction: column; align-items: flex-start; }
+}
+
+/* =====================================================
    FAQ
    ===================================================== */
 .faq-list { display: flex; flex-direction: column; gap: 10px; max-width: 100%; }
@@ -3817,9 +4205,17 @@ body.reel-lock { overflow: hidden; }
 /* =====================================================
    Responsive
    ===================================================== */
-@media (max-width: 900px) {
+/* The nav collapses earlier than the rest of the responsive block. Seven items
+   plus the CTA stop fitting the 72px bar below ~1080px: links wrap to two lines
+   while the bar height is fixed. The other 22 rules in the 900px block below are
+   unrelated layout collapses (hero, footer, grids, sticky CTA) and deliberately
+   keep their own threshold, so only the two nav rules move here. */
+@media (max-width: 1080px) {
   .nav-links { display: none; }
   .nav-mobile-toggle { display: block; }
+}
+
+@media (max-width: 900px) {
   .steps-grid { grid-template-columns: 1fr; }
   .features-grid { grid-template-columns: 1fr; }
   .protocol-grid { grid-template-columns: 1fr; }
@@ -4025,31 +4421,32 @@ body.reel-lock { overflow: hidden; }
 <noscript>
   <div class="noscript-notice">
     <p><strong>This form needs JavaScript to work.</strong></p>
-    <p>Please enable JavaScript, or email us at <a href="mailto:hello@neurohome.com">hello@neurohome.com</a> and we will get you started.</p>
+    <p>Please enable JavaScript, or email us at <a href="mailto:hello@mail.neurohome.app">hello@mail.neurohome.app</a> and we will get you started.</p>
   </div>
 </noscript>
 
 <nav class="nav" id="nav">
-  <a class="nav-brand" href="index.html" aria-label="NeuroHome by NeuroSage Centers">
+  <a class="nav-brand" href="index.html" aria-label="NeuroHome by NeuroSage Hub">
     <svg class="nav-brand-mark" width="44" height="44" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect x="8" y="22" width="36" height="27" rx="3" stroke="#1D2939" stroke-width="2.2" fill="none"/>
       <path d="M 4 24 L 26 5 L 48 24" stroke="#1D2939" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-      <rect x="20" y="34" width="12" height="15" rx="1.5" stroke="#1D2939" stroke-width="1.5" fill="rgba(0,206,253,0.06)"/>
-      <circle cx="8" cy="22" r="3" fill="#00CEFD"/>
-      <circle cx="44" cy="22" r="3" fill="#00CEFD"/>
-      <circle cx="8" cy="49" r="3" fill="#00CEFD"/>
-      <circle cx="44" cy="49" r="3" fill="#00CEFD"/>
-      <circle cx="26" cy="5" r="3" fill="#00CEFD"/>
+      <rect x="20" y="34" width="12" height="15" rx="1.5" stroke="#1D2939" stroke-width="1.5" fill="rgba(0,194,255,0.06)"/>
+      <circle cx="8" cy="22" r="3" fill="#00C2FF"/>
+      <circle cx="44" cy="22" r="3" fill="#00C2FF"/>
+      <circle cx="8" cy="49" r="3" fill="#00C2FF"/>
+      <circle cx="44" cy="49" r="3" fill="#00C2FF"/>
+      <circle cx="26" cy="5" r="3" fill="#00C2FF"/>
     </svg>
     <span class="nav-brand-wordmark">
       <span class="nav-brand-name">Neuro<span>Home</span></span>
-      <span class="nav-brand-tag">by NeuroSage Centers</span>
+      <span class="nav-brand-tag">by NeuroSage Hub</span>
     </span>
   </a>
   <div class="nav-links" id="navLinks">
     <a class="nav-link" href="index.html#dr-kyle">Dr. Kyle</a>
     <a class="nav-link" href="index.html#method">Our Approach</a>
     <a class="nav-link" href="index.html#testimonials">Results</a>
+    <a class="nav-link" href="index.html#family">NeuroSage Hub</a>
     <a class="nav-link" href="index.html#faq">FAQ</a>
     <a class="nav-link" href="https://neurohome-app.vercel.app/login">Family Login</a>
     <a class="nav-cta" href="start.html">Start your child's plan</a>
@@ -4181,9 +4578,9 @@ body.reel-lock { overflow: hidden; }
   <div class="footer-grid">
     <div class="footer-col footer-col-brand">
       <div class="footer-brand-name">Neuro<span>Home</span></div>
-      <div class="footer-brand-tag">A NeuroSage Centers program</div>
+      <div class="footer-brand-tag">A NeuroSage Hub program</div>
       <p class="footer-clinical">
-        Clinical direction by <strong>Dr. Kyle Daigle, DC, FIBFN-CND</strong>. NeuroHome services are delivered by licensed clinicians under Dr. Kyle's clinical supervision, with medical oversight by a licensed physician (MD) who reviews our protocols and cases.
+        Led by <strong>Dr. Kyle Daigle, DC, FIBFN-CND</strong>, with a team of licensed specialists. NeuroHome services are delivered by licensed clinicians, each working within their own license and scope, with medical oversight by a licensed physician (MD) who reviews our protocols and cases.
       </p>
     </div>
     <div class="footer-col">
@@ -4203,7 +4600,7 @@ body.reel-lock { overflow: hidden; }
     </div>
     <div class="footer-col">
       <div class="footer-col-title">Contact</div>
-      <a class="footer-link" href="mailto:hello@neurohome.com">hello@neurohome.com</a>
+      <a class="footer-link" href="mailto:hello@mail.neurohome.app">hello@mail.neurohome.app</a>
     </div>
   </div>
   <p class="footer-disclaimer">
@@ -4211,7 +4608,7 @@ body.reel-lock { overflow: hidden; }
   </p>
   <div class="footer-bottom">
     <div class="footer-copy">&copy; 2026 NSH Operations, LLC. All rights reserved.</div>
-    <div class="footer-meta">NeuroHome is a pilot program of NeuroSage Centers.</div>
+    <div class="footer-meta">NeuroHome is a pilot program of NeuroSage Hub.</div>
   </div>
 </footer>
 
@@ -4274,26 +4671,59 @@ function toggleFaq(el) {
   }
 }
 
-// ========== THE METHOD - stepper ==========
-// State: one integer `open`, 1-4. Step 01 shows by default; one step shows at a
-// time (swap in place); the right-side "Next" arrow advances to open + 1.
-(function () {
-  const root = document.getElementById('method');
-  if (!root || !root.querySelector('[data-step]')) return;
-  let open = 1;
+// ========== STEPPERS ==========
+// State: one integer `open` per root. One [data-step] shows at a time (swap in
+// place); any [data-go] button inside the root jumps to that index.
+//
+// Two callers, one implementation:
+//   #method  - 4 steps, opens on 01, has a [data-closer] that appears on the
+//              last step only.
+//   #family  - 3 tiers, opens on 02 via [data-stepper-open] because NeuroHome
+//              is what this site sells, and mirrors state onto [data-tab]
+//              buttons through aria-selected.
+//
+// A root is found either by being #method (kept as-is so its markup did not
+// have to change) or by carrying [data-stepper]. New steppers should use the
+// attribute; the #method lookup is here only to avoid touching working markup.
+//
+// Panels carry the `hidden` attribute in markup, so with JS live the correct
+// one is showing from the first paint. CSS under html:not(.js) reveals them all
+// when scripting is off - see the .family-* block in neurohome.css.
+function initStepper(root) {
+  if (!root) return;
+  // Idempotent: #method is initialised by id and #family by attribute, so a
+  // root that ever gains both would otherwise bind two click handlers.
+  if (root.dataset.stepperReady) return;
+  const steps = root.querySelectorAll('[data-step]');
+  if (!steps.length) return;
+  root.dataset.stepperReady = '1';
+
+  const first = +root.dataset.stepperOpen || 1;
+  let open = first;
+
   function render() {
-    root.querySelectorAll('[data-step]').forEach(el => { el.hidden = +el.dataset.step !== open; });
+    steps.forEach(el => { el.hidden = +el.dataset.step !== open; });
+    // Only #method has a closer; it belongs to the final step.
     const closer = root.querySelector('[data-closer]');
-    if (closer) closer.hidden = open !== 4;
+    if (closer) closer.hidden = open !== steps.length;
+    // Only #family has tabs; harmless no-op elsewhere.
+    root.querySelectorAll('[data-tab]').forEach(tab => {
+      tab.setAttribute('aria-selected', String(+tab.dataset.tab === open));
+    });
   }
+
   root.addEventListener('click', e => {
     const btn = e.target.closest('[data-go]');
-    if (!btn) return;
+    if (!btn || !root.contains(btn)) return;
     open = +btn.dataset.go;
     render();
   });
+
   render();
-})();
+}
+
+initStepper(document.getElementById('method'));
+document.querySelectorAll('[data-stepper]').forEach(initStepper);
 
 // ========== SMOOTH SCROLL ==========
 document.querySelectorAll('a[href^="#"]').forEach(a => {
@@ -4680,7 +5110,7 @@ form.addEventListener('submit', function (event) {
       // Nothing here clears or resets the form: a parent who just typed their
       // child's details must not lose them to a dropped connection.
       setPending(false);
-      showError("We couldn't send that just now. Please check your connection and try again. If it keeps happening, email hello@neurohome.com and we'll help you directly.");
+      showError("We couldn't send that just now. Please check your connection and try again. If it keeps happening, email hello@mail.neurohome.app and we'll help you directly.");
     });
 });
 </script>
@@ -5116,7 +5546,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--brand-deep); ou
 .kyle-content { display: flex; flex-direction: column; gap: 22px; }
 .kyle-name { font-family: 'Outfit', sans-serif; font-size: clamp(28px,3.5vw,42px); font-weight: 800; color: var(--text); letter-spacing: -1px; line-height: 1.1; margin-bottom: 4px; }
 .kyle-name-suffix { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--brand-text); letter-spacing: 1px; }
-.kyle-bio { font-size: 16px; color: var(--text-2); line-height: 1.75; }
+.kyle-bio { font-size: clamp(16px,1.7vw,18px); color: var(--text-2); line-height: 1.75; }
 .kyle-bio strong { color: var(--text); font-weight: 600; }
 .kyle-credentials { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
 .kyle-cred { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); transition: border-color 0.25s; }
@@ -5707,6 +6137,179 @@ body.reel-lock { overflow: hidden; }
 .sticky-cta .btn-primary { flex: 1; justify-content: center; padding: 14px 20px; font-size: 15px; }
 
 /* =====================================================
+   The NeuroSage family (#family)
+   Three-tier stepper: Hub / NeuroHome / NeuroSage Centers.
+
+   Ported from the "NeuroSage Family Section" design export, which shipped as
+   React + DCLogic with 100% inline styles on its own blue-grey palette
+   (#1D2939 / #667085 / #98A2B3) and three near-identical tier hues. Rebuilt
+   here on the existing tokens so the site keeps one grey family, and driven by
+   the shared [data-step]/[data-go] stepper in neurohome.js.
+
+   The design's #98A2B3 micro-label grey measured 2.58:1 on white and failed
+   AA in five places; --text-3 replaces it at 5.35:1. The three tier hues were
+   only 1.98:1 apart from each other and the accessible fix made them closer
+   still, so the active tab is one --ink-navy treatment (14.48:1) and the tier
+   is identified by its own label instead of by hue.
+
+   Panel visibility is gated on html.js rather than on [hidden] alone, so all
+   three tiers stay readable with JavaScript off. See the html:not(.js) rules
+   near the end of this block.
+   ===================================================== */
+#family .conditions-headline { font-size: clamp(28px,3.6vw,46px); max-width: none; }
+/* Span the full container so the lede lines up with the panel edge below it. */
+#family .section-sub { max-width: none; }
+
+.family-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); overflow: hidden; display: grid; grid-template-columns: minmax(0,0.62fr) minmax(0,1fr); }
+/* An author `display` declaration outranks the UA [hidden] rule, so setting
+   display:grid above silently defeats the hidden attribute and every tier
+   renders at once. This puts [hidden] back. */
+.family-panel[hidden] { display: none; }
+.family-brand { padding: clamp(28px,3vw,44px); display: flex; flex-direction: column; gap: 26px; border-right: 1px solid var(--border); background: var(--bg); }
+.family-brand.is-dark { background: var(--ink-navy); border-right-color: rgba(250,250,250,0.14); }
+.family-logo { min-height: 64px; display: flex; align-items: center; }
+.family-logo img { display: block; width: 200px; max-width: 100%; height: auto; }
+.family-wordmark { font-family: 'Outfit', sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); display: inline-flex; align-items: center; gap: 14px; }
+/* The committed nav mark cyan (b6b2a57), deliberately not --brand #00CEFD. */
+.family-wordmark b { font-weight: inherit; color: #00C2FF; }
+.family-wordmark img { width: 46px; height: 46px; display: block; flex: none; }
+.family-meta { display: flex; flex-direction: column; gap: 6px; }
+.family-setting { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brand-text); }
+.family-format { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-2); }
+.family-brand.is-dark .family-wordmark { color: var(--text-inv); }
+.family-brand.is-dark .family-setting { color: #00C2FF; }
+.family-brand.is-dark .family-format { color: var(--text-inv); }
+/* All three tiers now carry logo + meta + figure. justify-content:space-between
+   is gone: it was compensating for tier 01 and 02 having no figure, and with the
+   figures restored it stretched the panel and opened a dead gap mid-column.
+
+   Instead the figure wrapper takes the leftover height and centres the graphic
+   in it, which is what the source design did (flex:1 + align-items:center on its
+   graphic slot) and what I dropped on the first port. Without it the left column
+   ran 143-235px short of the right one and dumped all of it at the bottom. */
+/* Figure sits directly under logo + meta at its natural height. It no longer
+   takes flex:1 - the CLINICIAN TIME block below does, via margin-top:auto, so
+   leftover height collects between the figure and that block instead of being
+   centred around the graphic.
+
+   240px -> 320px: the brand column content box is ~366px at 1280, so 320 fills
+   it without reaching the padding edge. On the 268-unit tier 01/02 viewBoxes the
+   scale goes 0.896 -> 1.194, which lifts their 10px mono labels from ~9px to
+   ~12px effective and is the real reason for the change. */
+.family-fig { display: flex; align-items: flex-start; }
+.family-fig img { display: block; width: 100%; max-width: 320px; height: auto; }
+.family-fig svg { display: block; width: 100%; max-width: 320px; height: auto; overflow: visible; }
+
+/* Tier figure ink. Container chrome is deliberately faint, matching the four
+   method figures in index.html which stroke their own chrome at 1.17-1.53:1;
+   the icon strokes and labels are the parts that carry meaning and those are
+   graded as text. Light-panel values first, dark-panel overrides below. */
+.ffig-lab { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 1.4px; fill: var(--text-2); }
+.ffig-lab-sm { font-size: 9px; }
+.ffig-lab-xs { font-size: 8.5px; }
+.ffig-box { fill: none; stroke: var(--border-hover); stroke-width: 1; }
+.ffig-ico { fill: none; stroke: var(--brand-text); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ffig-dot { fill: var(--brand-text); stroke: none; }
+
+/* Dark panel (tier 02). --text-inv is 13.87:1 on --ink-navy, so the source
+   opacities survive: 0.75 gives 8.44:1 and 0.70 gives 7.52:1, both past AA. */
+.family-brand.is-dark .ffig-box { stroke: rgba(250,250,250,0.22); }
+.family-brand.is-dark .ffig-lab { fill: var(--text-inv); }
+.ffig-screen { fill: rgba(0,194,255,0.10); stroke: #00C2FF; stroke-width: 1; }
+.ffig-accent { fill: none; stroke: #00C2FF; stroke-width: 1.6; stroke-linecap: round; }
+.ffig-live { fill: var(--accent-red); stroke: none; }
+.ffig-ico-ink { fill: none; stroke: var(--text-inv); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; opacity: 0.75; }
+.ffig-dash { fill: none; stroke: rgba(250,250,250,0.22); stroke-width: 1.5; stroke-dasharray: 3 4; }
+.ffig-o75 { opacity: 0.75; }
+.ffig-o70 { opacity: 0.7; }
+
+/* CLINICIAN TIME meter, ported from the source design. margin-top:auto pins it
+   to the bottom of the brand column, which is what absorbs the leftover height
+   the figure used to. Filled segments carry the value and are graded as UI
+   indicators (>=3:1); the empty track is chrome, same precedent as the figure
+   outlines and the method figures at 1.17-1.53:1. */
+.family-access { margin-top: auto; border-top: 1px solid var(--border); padding-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+.family-brand.is-dark .family-access { border-top-color: rgba(250,250,250,0.16); }
+.family-access-l { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-3); }
+.family-brand.is-dark .family-access-l { color: var(--text-inv); opacity: 0.7; }
+.family-access-bar { display: flex; gap: 6px; align-items: center; }
+/* Intensity note under the meter. Source used a single mid grey for both the
+   label and this line; --text-3 is 5.12:1 on --bg and the dark variant lands at
+   7.52:1, so the pair is differentiated by type, not by contrast. */
+.family-access-note { font-size: 13.5px; line-height: 1.5; color: var(--text-3); margin: 0; }
+.family-brand.is-dark .family-access-note { color: var(--text-inv); opacity: 0.7; }
+.family-access-seg { width: 34px; height: 5px; border-radius: 3px; background: var(--border-hover); }
+.family-access-seg.on { background: var(--brand-text); }
+.family-brand.is-dark .family-access-seg { background: rgba(250,250,250,0.22); }
+.family-brand.is-dark .family-access-seg.on { background: #00C2FF; }
+
+.family-body { padding: clamp(28px,3.4vw,52px); display: flex; flex-direction: column; gap: 22px; }
+.family-purpose { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brand-text); }
+.family-h3 { font-family: 'Outfit', sans-serif; font-size: clamp(24px,2.8vw,36px); font-weight: 800; line-height: 1.12; letter-spacing: -0.02em; color: var(--text); margin: 0; }
+.family-p { font-size: 16.5px; line-height: 1.72; color: var(--text-2); margin: 0; }
+.family-facts { border-top: 1px solid var(--border); margin: 0; }
+.family-fact { display: grid; grid-template-columns: 160px minmax(0,1fr); gap: 24px; align-items: baseline; padding: 15px 0; border-bottom: 1px solid var(--border); }
+.family-fact:last-child { border-bottom: none; }
+.family-fact dt { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); }
+.family-fact dd { font-size: 16.5px; line-height: 1.5; color: var(--text); margin: 0; }
+
+.family-foot { margin-top: auto; border-top: 1px solid var(--border); padding-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+/* The arrows are now the only way through the tiers, so this stops reading as a
+   footnote: the eyebrow takes the --brand-text accent that signals interactive
+   elsewhere on the page (4.93:1 on --bg-card) and goes 10px -> 11px, and the
+   destination title goes 16px -> 19px so the pair carries the same weight as the
+   arrow buttons beside it. */
+.family-next-l { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brand-text); display: block; margin-bottom: 3px; }
+.family-next-t { font-family: 'Outfit', sans-serif; font-size: 19px; font-weight: 700; letter-spacing: -0.015em; color: var(--text); }
+.family-nav { display: flex; gap: 10px; flex: none; }
+
+/* neurohome.css declares no global anchor styling (only a:focus-visible at :188),
+   so an unstyled link in body copy renders browser-default blue. The legal pages
+   solve this with their own inline rule on --brand-deep, but that measures 3.31:1
+   on white and fails AA, so this uses --brand-text at 4.93:1. */
+.family-p a { color: var(--brand-text); text-decoration: underline; text-underline-offset: 3px; }
+.family-p a:hover { color: var(--text); }
+
+.family-note { font-size: 15px; line-height: 1.65; color: var(--text-2); margin: 18px 0 0; max-width: 860px; }
+
+/* JS off: there is no stepper, so show every tier stacked and drop the dead
+   controls. html.js is set before first paint (index.html head), so with JS
+   live the open tier is correct from the first frame and nothing flashes. */
+html:not(.js) .family-panel[hidden] { display: grid; }
+html:not(.js) .family-panel + .family-panel { margin-top: 18px; }
+html:not(.js) .family-foot { display: none; }
+
+/* The same fix for the older #method stepper, which had the JS-off gap this
+   pattern was built to close: with neurohome.js absent nothing can advance it,
+   so steps 02-04 and the closer were unreachable.
+
+   #method already restores [hidden] at :818 with "display: none !important",
+   its own answer to the same cascade problem, so overriding that needs
+   !important at higher specificity:
+     #method [hidden]                          (1,1,0) !important
+     html:not(.js) #method .mth-step[hidden]   (1,3,1) !important  <- wins
+
+   .mth-step is display:grid and .mth-closer is display:flex, so each needs its
+   own value rather than one shared rule. The navigation goes away because with
+   every step stacked the "Next" labels and arrows are dead controls. */
+html:not(.js) #method .mth-step[hidden] { display: grid !important; }
+html:not(.js) #method .mth-closer[hidden] { display: flex !important; }
+html:not(.js) #method .mth-nav,
+html:not(.js) #method .mth-closer .mth-back-btn { display: none; }
+
+/* Matches .mth-step's collapse point so the two steppers break together. */
+@media (max-width: 1100px) {
+  .family-panel { grid-template-columns: 1fr; }
+  .family-brand { border-right: none; border-bottom: 1px solid var(--border); }
+  .family-brand.is-dark { border-bottom-color: rgba(250,250,250,0.14); }
+  .family-fig { margin-top: 0; }
+}
+@media (max-width: 760px) {
+  .family-fact { grid-template-columns: 1fr; gap: 6px; }
+  .family-foot { flex-direction: column; align-items: flex-start; }
+}
+
+/* =====================================================
    FAQ
    ===================================================== */
 .faq-list { display: flex; flex-direction: column; gap: 10px; max-width: 100%; }
@@ -5783,9 +6386,17 @@ body.reel-lock { overflow: hidden; }
 /* =====================================================
    Responsive
    ===================================================== */
-@media (max-width: 900px) {
+/* The nav collapses earlier than the rest of the responsive block. Seven items
+   plus the CTA stop fitting the 72px bar below ~1080px: links wrap to two lines
+   while the bar height is fixed. The other 22 rules in the 900px block below are
+   unrelated layout collapses (hero, footer, grids, sticky CTA) and deliberately
+   keep their own threshold, so only the two nav rules move here. */
+@media (max-width: 1080px) {
   .nav-links { display: none; }
   .nav-mobile-toggle { display: block; }
+}
+
+@media (max-width: 900px) {
   .steps-grid { grid-template-columns: 1fr; }
   .features-grid { grid-template-columns: 1fr; }
   .protocol-grid { grid-template-columns: 1fr; }
@@ -5977,26 +6588,27 @@ try { sessionStorage.setItem('nh_lead_email', "maria.alvarez@example.com"); } ca
 <body>
 
 <nav class="nav" id="nav">
-  <a class="nav-brand" href="index.html" aria-label="NeuroHome by NeuroSage Centers">
+  <a class="nav-brand" href="index.html" aria-label="NeuroHome by NeuroSage Hub">
     <svg class="nav-brand-mark" width="44" height="44" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect x="8" y="22" width="36" height="27" rx="3" stroke="#1D2939" stroke-width="2.2" fill="none"/>
       <path d="M 4 24 L 26 5 L 48 24" stroke="#1D2939" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-      <rect x="20" y="34" width="12" height="15" rx="1.5" stroke="#1D2939" stroke-width="1.5" fill="rgba(0,206,253,0.06)"/>
-      <circle cx="8" cy="22" r="3" fill="#00CEFD"/>
-      <circle cx="44" cy="22" r="3" fill="#00CEFD"/>
-      <circle cx="8" cy="49" r="3" fill="#00CEFD"/>
-      <circle cx="44" cy="49" r="3" fill="#00CEFD"/>
-      <circle cx="26" cy="5" r="3" fill="#00CEFD"/>
+      <rect x="20" y="34" width="12" height="15" rx="1.5" stroke="#1D2939" stroke-width="1.5" fill="rgba(0,194,255,0.06)"/>
+      <circle cx="8" cy="22" r="3" fill="#00C2FF"/>
+      <circle cx="44" cy="22" r="3" fill="#00C2FF"/>
+      <circle cx="8" cy="49" r="3" fill="#00C2FF"/>
+      <circle cx="44" cy="49" r="3" fill="#00C2FF"/>
+      <circle cx="26" cy="5" r="3" fill="#00C2FF"/>
     </svg>
     <span class="nav-brand-wordmark">
       <span class="nav-brand-name">Neuro<span>Home</span></span>
-      <span class="nav-brand-tag">by NeuroSage Centers</span>
+      <span class="nav-brand-tag">by NeuroSage Hub</span>
     </span>
   </a>
   <div class="nav-links" id="navLinks">
     <a class="nav-link" href="index.html#dr-kyle">Dr. Kyle</a>
     <a class="nav-link" href="index.html#method">Our Approach</a>
     <a class="nav-link" href="index.html#testimonials">Results</a>
+    <a class="nav-link" href="index.html#family">NeuroSage Hub</a>
     <a class="nav-link" href="index.html#faq">FAQ</a>
     <a class="nav-link" href="https://neurohome-app.vercel.app/login">Family Login</a>
     <a class="nav-cta" href="start.html">Start your child's plan</a>
@@ -6102,7 +6714,7 @@ try { sessionStorage.setItem('nh_lead_email', "maria.alvarez@example.com"); } ca
     </div>
 
     <div class="ty-footrow">
-      <p>Nothing in your inbox after a day? Write to <a href="mailto:hello@neurohome.com">hello@neurohome.com</a> and we'll follow up personally.</p>
+      <p>Nothing in your inbox after a day? Write to <a href="mailto:hello@mail.neurohome.app">hello@mail.neurohome.app</a> and we'll follow up personally.</p>
       <a class="ty-back" href="index.html">Back to NeuroHome <span aria-hidden="true">&#8594;</span></a>
     </div>
   </section>
@@ -6112,9 +6724,9 @@ try { sessionStorage.setItem('nh_lead_email', "maria.alvarez@example.com"); } ca
   <div class="footer-grid">
     <div class="footer-col footer-col-brand">
       <div class="footer-brand-name">Neuro<span>Home</span></div>
-      <div class="footer-brand-tag">A NeuroSage Centers program</div>
+      <div class="footer-brand-tag">A NeuroSage Hub program</div>
       <p class="footer-clinical">
-        Clinical direction by <strong>Dr. Kyle Daigle, DC, FIBFN-CND</strong>. NeuroHome services are delivered by licensed clinicians under Dr. Kyle's clinical supervision, with medical oversight by a licensed physician (MD) who reviews our protocols and cases.
+        Led by <strong>Dr. Kyle Daigle, DC, FIBFN-CND</strong>, with a team of licensed specialists. NeuroHome services are delivered by licensed clinicians, each working within their own license and scope, with medical oversight by a licensed physician (MD) who reviews our protocols and cases.
       </p>
     </div>
     <div class="footer-col">
@@ -6134,7 +6746,7 @@ try { sessionStorage.setItem('nh_lead_email', "maria.alvarez@example.com"); } ca
     </div>
     <div class="footer-col">
       <div class="footer-col-title">Contact</div>
-      <a class="footer-link" href="mailto:hello@neurohome.com">hello@neurohome.com</a>
+      <a class="footer-link" href="mailto:hello@mail.neurohome.app">hello@mail.neurohome.app</a>
     </div>
   </div>
   <p class="footer-disclaimer">
@@ -6142,7 +6754,7 @@ try { sessionStorage.setItem('nh_lead_email', "maria.alvarez@example.com"); } ca
   </p>
   <div class="footer-bottom">
     <div class="footer-copy">&copy; 2026 NSH Operations, LLC. All rights reserved.</div>
-    <div class="footer-meta">NeuroHome is a pilot program of NeuroSage Centers.</div>
+    <div class="footer-meta">NeuroHome is a pilot program of NeuroSage Hub.</div>
   </div>
 </footer>
 
@@ -6205,26 +6817,59 @@ function toggleFaq(el) {
   }
 }
 
-// ========== THE METHOD - stepper ==========
-// State: one integer `open`, 1-4. Step 01 shows by default; one step shows at a
-// time (swap in place); the right-side "Next" arrow advances to open + 1.
-(function () {
-  const root = document.getElementById('method');
-  if (!root || !root.querySelector('[data-step]')) return;
-  let open = 1;
+// ========== STEPPERS ==========
+// State: one integer `open` per root. One [data-step] shows at a time (swap in
+// place); any [data-go] button inside the root jumps to that index.
+//
+// Two callers, one implementation:
+//   #method  - 4 steps, opens on 01, has a [data-closer] that appears on the
+//              last step only.
+//   #family  - 3 tiers, opens on 02 via [data-stepper-open] because NeuroHome
+//              is what this site sells, and mirrors state onto [data-tab]
+//              buttons through aria-selected.
+//
+// A root is found either by being #method (kept as-is so its markup did not
+// have to change) or by carrying [data-stepper]. New steppers should use the
+// attribute; the #method lookup is here only to avoid touching working markup.
+//
+// Panels carry the `hidden` attribute in markup, so with JS live the correct
+// one is showing from the first paint. CSS under html:not(.js) reveals them all
+// when scripting is off - see the .family-* block in neurohome.css.
+function initStepper(root) {
+  if (!root) return;
+  // Idempotent: #method is initialised by id and #family by attribute, so a
+  // root that ever gains both would otherwise bind two click handlers.
+  if (root.dataset.stepperReady) return;
+  const steps = root.querySelectorAll('[data-step]');
+  if (!steps.length) return;
+  root.dataset.stepperReady = '1';
+
+  const first = +root.dataset.stepperOpen || 1;
+  let open = first;
+
   function render() {
-    root.querySelectorAll('[data-step]').forEach(el => { el.hidden = +el.dataset.step !== open; });
+    steps.forEach(el => { el.hidden = +el.dataset.step !== open; });
+    // Only #method has a closer; it belongs to the final step.
     const closer = root.querySelector('[data-closer]');
-    if (closer) closer.hidden = open !== 4;
+    if (closer) closer.hidden = open !== steps.length;
+    // Only #family has tabs; harmless no-op elsewhere.
+    root.querySelectorAll('[data-tab]').forEach(tab => {
+      tab.setAttribute('aria-selected', String(+tab.dataset.tab === open));
+    });
   }
+
   root.addEventListener('click', e => {
     const btn = e.target.closest('[data-go]');
-    if (!btn) return;
+    if (!btn || !root.contains(btn)) return;
     open = +btn.dataset.go;
     render();
   });
+
   render();
-})();
+}
+
+initStepper(document.getElementById('method'));
+document.querySelectorAll('[data-stepper]').forEach(initStepper);
 
 // ========== SMOOTH SCROLL ==========
 document.querySelectorAll('a[href^="#"]').forEach(a => {
@@ -7722,7 +8367,98 @@ button.intake-progress-bar:focus-visible { outline: 2px solid var(--brand); outl
   background: #0f1b33;
   border-radius: 20px;
   padding: clamp(28px,4vw,44px);
-  text-align: center;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  /* Column gap only. The note is a third grid child sitting in row 2, and a
+     row gap here would push it away from the actions it belongs to; its own
+     margin-top does that spacing instead. */
+  column-gap: clamp(28px,4vw,52px);
+  row-gap: 0;
+  /* stretch, not center: the next-step panel is a bordered card, and centring a
+     276px card against a 369px column leaves it floating with uneven space above
+     and below. Stretch makes it match the column. Its contents stay top-aligned
+     and the CTA button keeps its intrinsic height - .thanks-next is a column
+     flex container and sets no flex-grow on its children. */
+  align-items: stretch;
+  text-align: left;
+}
+@media (max-width: 800px) {
+  .thanks-hero { grid-template-columns: 1fr; column-gap: 28px; row-gap: 28px; }
+  /* The row gap already separates the note; its desktop margin would double it.
+     Scoped to .thanks-hero because the base .thanks-note rule is declared later
+     in the sheet, so an equal-specificity override here would lose the cascade. */
+  .thanks-hero .thanks-note { margin-top: 0; }
+  /* Stacked: no column to align to, so the alignment insets come back off.
+     Scoped to .thanks-hero: this block sits above the base .thanks-next and
+     .thanks-main rules, so an equal-specificity reset here would lose. */
+  .thanks-hero .thanks-next { padding-top: clamp(22px,3vw,30px); }
+  .thanks-hero .thanks-main { padding-bottom: 0; }
+  /* 32px is a desktop alignment requirement (it matches .display-l so the two
+     headings and the body copy under them line up). Stacked there is nothing to
+     align to, and 32px wraps this heading onto two lines in a 266px column, so
+     it drops back. Scoped to .thanks-hero for the same reason as the resets
+     above: the base rule is declared later in the sheet. */
+  .thanks-hero .thanks-next-title { font-size: 24px; }
+}
+/* The next-step panel. Hidden by renderThanks on the failure branch so success
+   and failure chrome stay mutually exclusive. */
+.thanks-next {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  padding: clamp(22px,3vw,30px);
+  /* Heading alignment. The left column opens with the 60px check plus its 24px
+     margin, so h1 lands 84px below the column top. The right column opens with
+     the 1px border, this padding, the 17px eyebrow and the 12px flex gap:
+     84 - 1 - 17 - 14 = 52. Every term is a fixed px, so the two headings stay
+     on one line at every width above the 800px breakpoint. Below it the columns
+     stack, alignment is moot, and the media query hands padding back to the
+     clamp. */
+  padding-top: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* 14px, not 12: matches .thanks-hero h1 margin-bottom so the gap under each
+     heading is identical. */
+  gap: 14px;
+}
+.thanks-next-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+/* Matches .display-l (32px / 1.1 = 35.2px) so this heading and the h1 opposite
+   have the same box height. With the gap below also matched to the h1 margin,
+   the body copy under each lands on one line. */
+.thanks-next-title { color: #fff; font-size: 32px; line-height: 1.1; margin: 0; }
+.thanks-cta-line {
+  color: #C9D6E4;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+  text-wrap: pretty;
+}
+.thanks-next .button-primary {
+  /* auto, not a fixed gap: pins the pill to the panel floor so it shares a
+     baseline with the review button opposite. The 12px flex gap is the floor. */
+  margin-top: auto;
+  background: var(--brand);
+  color: #0B1526;
+  text-decoration: none;
+  box-shadow: 0 8px 24px var(--brand-glow);
+}
+.thanks-next .button-primary:hover { background: #fff; color: #0B1526; }
+/* Left column. Flex so .thanks-actions can be pushed to the floor with an auto
+   margin, and inset at the bottom by the same amount as the aside (its padding
+   plus its 1px border) so the two pills land on one baseline rather than the
+   left one sitting a card-padding lower. */
+.thanks-main {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(clamp(22px,3vw,30px) + 1px);
 }
 .thanks-hero h1 { color: #fff; }
 .thanks-hero .thanks-note { color: #93A3B8; }
@@ -7754,19 +8490,23 @@ button.intake-progress-bar:focus-visible { outline: 2px solid var(--brand); outl
   color: #C9D6E4;
   font-size: 16px;
   line-height: 1.65;
-  max-width: 520px;
-  margin: 0 auto 24px;
+  max-width: 460px;
+  /* Carries the minimum gap to the actions below, which now use margin-top:auto
+     and would otherwise collapse against this when the column has no slack. */
+  margin: 0 0 26px;
 }
 .thanks-note {
-  margin-top: 24px;
+  /* Third grid child: pin it to column 1 so it sits under the actions rather
+     than under the next-step panel. */
+  grid-column: 1;
+  margin-top: 18px;
   font-size: 13px;
   color: var(--ink-3);
 }
 .thanks-actions {
   display: flex;
   gap: 12px;
-  justify-content: center;
-  margin-top: 28px;
+  margin-top: auto;
   flex-wrap: wrap;
 }
 footer.foot {
@@ -7835,12 +8575,12 @@ footer.foot code { font-family: ui-monospace, monospace; color: var(--brand-deep
   <svg class="intake-brand-mark" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <rect x="8" y="22" width="36" height="27" rx="3" stroke="#1D2939" stroke-width="2.2" fill="none"/>
     <path d="M 4 24 L 26 5 L 48 24" stroke="#1D2939" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <rect x="20" y="34" width="12" height="15" rx="1.5" stroke="#1D2939" stroke-width="1.5" fill="rgba(0,206,253,0.06)"/>
-    <circle cx="8" cy="22" r="3" fill="#00CEFD"/>
-    <circle cx="44" cy="22" r="3" fill="#00CEFD"/>
-    <circle cx="8" cy="49" r="3" fill="#00CEFD"/>
-    <circle cx="44" cy="49" r="3" fill="#00CEFD"/>
-    <circle cx="26" cy="5" r="3" fill="#00CEFD"/>
+    <rect x="20" y="34" width="12" height="15" rx="1.5" stroke="#1D2939" stroke-width="1.5" fill="rgba(0,194,255,0.06)"/>
+    <circle cx="8" cy="22" r="3" fill="#00C2FF"/>
+    <circle cx="44" cy="22" r="3" fill="#00C2FF"/>
+    <circle cx="8" cy="49" r="3" fill="#00C2FF"/>
+    <circle cx="44" cy="49" r="3" fill="#00C2FF"/>
+    <circle cx="26" cy="5" r="3" fill="#00C2FF"/>
   </svg>
   <div class="intake-brand-wordmark">
     <span class="intake-brand-name">Neuro<span>Home</span></span>
@@ -8206,7 +8946,7 @@ footer.foot code { font-family: ui-monospace, monospace; color: var(--brand-deep
       <ol class="next-steps">
         <li><b>Tell us what matters most</b>Choose the areas you most want help with.</li>
         <li><b>Tell us what you're hoping for</b>Share what meaningful progress would look like.</li>
-        <li><b>Help us see the full picture</b>Complete our developmental and health assessment.</li>
+        <li><b>Help us see the full picture</b>Answer our questions about development and health.</li>
       </ol>
       <p class="next-steps-foot">About 20 minutes &middot; Saves automatically as you go</p>
     </div>
@@ -8304,7 +9044,7 @@ footer.foot code { font-family: ui-monospace, monospace; color: var(--brand-deep
     </div>
 
     <div class="welcome-card scale-card">
-      <div class="welcome-group-title">Scoring scale</div>
+      <div class="welcome-group-title">How to answer</div>
       <p class="scale-lede">Choose the answer that best describes how much each item applies to your child. For behaviors or symptoms, think about how often you see it. For abilities or characteristics, think about how strongly it describes your child.</p>
       <div class="scale-legend">
         <div class="scale-step"><span class="scale-dot s0"></span><b>0</b>Never<small>Doesn't apply</small></div>
@@ -8313,12 +9053,12 @@ footer.foot code { font-family: ui-monospace, monospace; color: var(--brand-deep
         <div class="scale-step"><span class="scale-dot s3"></span><b>3</b>Often<small>Weekly, or moderate</small></div>
         <div class="scale-step"><span class="scale-dot s4"></span><b>4</b>Always<small>Daily, or severe</small></div>
       </div>
-      <p class="scale-note">If you genuinely don't know, pick <em>Unsure</em> and we'll skip it in scoring.</p>
+      <p class="scale-note">If you genuinely don't know, pick <em>Unsure</em> and we'll leave it out.</p>
       <p class="scale-note"><em>If you need to stop:</em> your answers save as you go, so you can close the page and come back. They are kept for <strong>3 days</strong>, on <strong>this device and browser only</strong>, so reopen the link on the same device to pick up where you left off.</p>
       <div class="onb-actions">
         <button class="button-secondary" id="intro-back">Back</button>
         <span class="onb-hint">Section 1 of 13 starts next.</span>
-        <button class="button-primary" id="intro-begin">Begin Assessment <span>&rarr;</span></button>
+        <button class="button-primary" id="intro-begin">Begin questions <span>&rarr;</span></button>
       </div>
     </div>
   </div>
@@ -8359,7 +9099,7 @@ footer.foot code { font-family: ui-monospace, monospace; color: var(--brand-deep
 <section class="screen" id="screen-processing">
   <div class="processing-hero">
     <span class="tag">Submitting</span>
-    <h2 class="display-l" style="margin-top: 24px;">Building <em>your child's</em> profile</h2>
+    <h2 class="display-l" style="margin-top: 24px;">Almost done</h2>
     <div class="processing-spinner"></div>
     <p class="processing-status" id="processing-status">Reviewing your answers...</p>
   </div>
@@ -8368,19 +9108,35 @@ footer.foot code { font-family: ui-monospace, monospace; color: var(--brand-deep
 <section class="screen" id="screen-thanks">
   <div class="thanks-band">
   <div class="thanks-hero">
-    <div class="thanks-check" id="thanks-check">&#10003;</div>
-    <h1 class="display-l" id="thanks-title">Thank you.</h1>
-    <p class="thanks-message" id="thanks-message">Your intake has been submitted.</p>
-    <p class="thanks-note" id="thanks-note">You can close this page. Your intake has been submitted. If you need to change anything, contact Dr. Kyle's team.</p>
-    <div class="thanks-actions">
-      <button class="button-secondary" id="thanks-review">Review my answers (read-only)</button>
-      <a class="button-secondary" href="index.html">Back to homepage</a>
+    <div class="thanks-main">
+      <div class="thanks-check" id="thanks-check">&#10003;</div>
+      <h1 class="display-l" id="thanks-title">Thank you.</h1>
+      <p class="thanks-message" id="thanks-message">Your intake has been submitted.</p>
+      <div class="thanks-actions">
+        <button class="button-secondary" id="thanks-review">Review my answers (read-only)</button>
+      </div>
     </div>
+    <!-- Next-step panel. renderThanks hides this on the failure branch.
+         The source design gave thanks-cta-line and thanks-book ids; both were
+         referenced by no JS, so they are dropped and the styling hangs off
+         classes. thanks-next keeps its id because renderThanks reads it. -->
+    <aside class="thanks-next" id="thanks-next">
+      <span class="thanks-next-label">Next step</span>
+      <h2 class="thanks-next-title">Book your plan call.</h2>
+      <p class="thanks-cta-line">Dr. Kyle's team walks you through your child's plan and answers whatever you want to ask.</p>
+      <a class="button-primary" href="book-my-call" data-journey-preview="booking calendar removed">Book my call</a>
+    </aside>
+    <!-- Third grid child, not a child of .thanks-main. On desktop it lands in
+         row 2 column 1, i.e. directly under the actions, exactly where it was.
+         On mobile the single column follows DOM order, so the stack ends
+         check / title / message / review button / CTA / note - the CTA is the
+         thing a family can act on rather than the dead-end note. -->
+    <p class="thanks-note" id="thanks-note">Need to change something? Contact Dr. Kyle's team.</p>
   </div>
   </div>
 </section>
 <footer class="foot">
-  <p>NeuroHome &middot; Child Assessment &middot; Form <code>v1.7.0</code> &middot; Engine <code>v1.3.2</code> &middot; 121 questions across 12 phenotypes</p>
+  <p>NeuroHome &middot; Child Assessment &middot; Form <code>v1.7.0</code> &middot; Engine <code>v1.3.2</code> &middot; 121 questions across 13 sections</p>
 </footer>
 <script>
 // =====================================================
@@ -9969,19 +10725,22 @@ function renderThanks(r, succeeded) {
   const title = document.getElementById('thanks-title');
   const message = document.getElementById('thanks-message');
   const note = document.getElementById('thanks-note');
+  const nextPanel = document.getElementById('thanks-next');
   const reviewBtn = document.getElementById('thanks-review');
   if (succeeded) {
     check.textContent = '\u2713';
     check.classList.remove('error');
     title.textContent = 'Thank you.';
-    message.textContent = "Your intake has been submitted. Dr. Kyle's team will read everything you shared and use it to build your child's plan: what we would do, who you would work with, and what it costs. They will be in touch to walk you through it.";
+    message.textContent = "Your intake has been submitted. Dr. Kyle's team will read everything you shared and use it to build your child's plan: what we would do, who you would work with, and what it costs.";
+    nextPanel.style.display = '';
     note.style.display = '';
     reviewBtn.textContent = 'Review my answers (read-only)';
   } else {
     check.textContent = '!';
     check.classList.add('error');
     title.textContent = "We couldn't submit your intake";
-    message.textContent = "We weren't able to submit your intake just now. Please try again, and if it keeps happening, contact Dr. Kyle's team at jrichardson@neurosagehub.com and we'll help you directly.";
+    message.textContent = "We weren't able to submit your intake just now. Please try again, and if it keeps happening, contact Dr. Kyle's team at hello@mail.neurohome.app and we'll help you directly.";
+    nextPanel.style.display = 'none';
     note.style.display = 'none';
     reviewBtn.textContent = 'Return to my intake';
   }
@@ -10996,7 +11755,98 @@ button.intake-progress-bar:focus-visible { outline: 2px solid var(--brand); outl
   background: #0f1b33;
   border-radius: 20px;
   padding: clamp(28px,4vw,44px);
-  text-align: center;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  /* Column gap only. The note is a third grid child sitting in row 2, and a
+     row gap here would push it away from the actions it belongs to; its own
+     margin-top does that spacing instead. */
+  column-gap: clamp(28px,4vw,52px);
+  row-gap: 0;
+  /* stretch, not center: the next-step panel is a bordered card, and centring a
+     276px card against a 369px column leaves it floating with uneven space above
+     and below. Stretch makes it match the column. Its contents stay top-aligned
+     and the CTA button keeps its intrinsic height - .thanks-next is a column
+     flex container and sets no flex-grow on its children. */
+  align-items: stretch;
+  text-align: left;
+}
+@media (max-width: 800px) {
+  .thanks-hero { grid-template-columns: 1fr; column-gap: 28px; row-gap: 28px; }
+  /* The row gap already separates the note; its desktop margin would double it.
+     Scoped to .thanks-hero because the base .thanks-note rule is declared later
+     in the sheet, so an equal-specificity override here would lose the cascade. */
+  .thanks-hero .thanks-note { margin-top: 0; }
+  /* Stacked: no column to align to, so the alignment insets come back off.
+     Scoped to .thanks-hero: this block sits above the base .thanks-next and
+     .thanks-main rules, so an equal-specificity reset here would lose. */
+  .thanks-hero .thanks-next { padding-top: clamp(22px,3vw,30px); }
+  .thanks-hero .thanks-main { padding-bottom: 0; }
+  /* 32px is a desktop alignment requirement (it matches .display-l so the two
+     headings and the body copy under them line up). Stacked there is nothing to
+     align to, and 32px wraps this heading onto two lines in a 266px column, so
+     it drops back. Scoped to .thanks-hero for the same reason as the resets
+     above: the base rule is declared later in the sheet. */
+  .thanks-hero .thanks-next-title { font-size: 24px; }
+}
+/* The next-step panel. Hidden by renderThanks on the failure branch so success
+   and failure chrome stay mutually exclusive. */
+.thanks-next {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  padding: clamp(22px,3vw,30px);
+  /* Heading alignment. The left column opens with the 60px check plus its 24px
+     margin, so h1 lands 84px below the column top. The right column opens with
+     the 1px border, this padding, the 17px eyebrow and the 12px flex gap:
+     84 - 1 - 17 - 14 = 52. Every term is a fixed px, so the two headings stay
+     on one line at every width above the 800px breakpoint. Below it the columns
+     stack, alignment is moot, and the media query hands padding back to the
+     clamp. */
+  padding-top: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* 14px, not 12: matches .thanks-hero h1 margin-bottom so the gap under each
+     heading is identical. */
+  gap: 14px;
+}
+.thanks-next-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+/* Matches .display-l (32px / 1.1 = 35.2px) so this heading and the h1 opposite
+   have the same box height. With the gap below also matched to the h1 margin,
+   the body copy under each lands on one line. */
+.thanks-next-title { color: #fff; font-size: 32px; line-height: 1.1; margin: 0; }
+.thanks-cta-line {
+  color: #C9D6E4;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+  text-wrap: pretty;
+}
+.thanks-next .button-primary {
+  /* auto, not a fixed gap: pins the pill to the panel floor so it shares a
+     baseline with the review button opposite. The 12px flex gap is the floor. */
+  margin-top: auto;
+  background: var(--brand);
+  color: #0B1526;
+  text-decoration: none;
+  box-shadow: 0 8px 24px var(--brand-glow);
+}
+.thanks-next .button-primary:hover { background: #fff; color: #0B1526; }
+/* Left column. Flex so .thanks-actions can be pushed to the floor with an auto
+   margin, and inset at the bottom by the same amount as the aside (its padding
+   plus its 1px border) so the two pills land on one baseline rather than the
+   left one sitting a card-padding lower. */
+.thanks-main {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(clamp(22px,3vw,30px) + 1px);
 }
 .thanks-hero h1 { color: #fff; }
 .thanks-hero .thanks-note { color: #93A3B8; }
@@ -11028,19 +11878,23 @@ button.intake-progress-bar:focus-visible { outline: 2px solid var(--brand); outl
   color: #C9D6E4;
   font-size: 16px;
   line-height: 1.65;
-  max-width: 520px;
-  margin: 0 auto 24px;
+  max-width: 460px;
+  /* Carries the minimum gap to the actions below, which now use margin-top:auto
+     and would otherwise collapse against this when the column has no slack. */
+  margin: 0 0 26px;
 }
 .thanks-note {
-  margin-top: 24px;
+  /* Third grid child: pin it to column 1 so it sits under the actions rather
+     than under the next-step panel. */
+  grid-column: 1;
+  margin-top: 18px;
   font-size: 13px;
   color: var(--ink-3);
 }
 .thanks-actions {
   display: flex;
   gap: 12px;
-  justify-content: center;
-  margin-top: 28px;
+  margin-top: auto;
   flex-wrap: wrap;
 }
 footer.foot {
@@ -11109,12 +11963,12 @@ footer.foot code { font-family: ui-monospace, monospace; color: var(--brand-deep
   <svg class="intake-brand-mark" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <rect x="8" y="22" width="36" height="27" rx="3" stroke="#1D2939" stroke-width="2.2" fill="none"/>
     <path d="M 4 24 L 26 5 L 48 24" stroke="#1D2939" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <rect x="20" y="34" width="12" height="15" rx="1.5" stroke="#1D2939" stroke-width="1.5" fill="rgba(0,206,253,0.06)"/>
-    <circle cx="8" cy="22" r="3" fill="#00CEFD"/>
-    <circle cx="44" cy="22" r="3" fill="#00CEFD"/>
-    <circle cx="8" cy="49" r="3" fill="#00CEFD"/>
-    <circle cx="44" cy="49" r="3" fill="#00CEFD"/>
-    <circle cx="26" cy="5" r="3" fill="#00CEFD"/>
+    <rect x="20" y="34" width="12" height="15" rx="1.5" stroke="#1D2939" stroke-width="1.5" fill="rgba(0,194,255,0.06)"/>
+    <circle cx="8" cy="22" r="3" fill="#00C2FF"/>
+    <circle cx="44" cy="22" r="3" fill="#00C2FF"/>
+    <circle cx="8" cy="49" r="3" fill="#00C2FF"/>
+    <circle cx="44" cy="49" r="3" fill="#00C2FF"/>
+    <circle cx="26" cy="5" r="3" fill="#00C2FF"/>
   </svg>
   <div class="intake-brand-wordmark">
     <span class="intake-brand-name">Neuro<span>Home</span></span>
@@ -11480,7 +12334,7 @@ footer.foot code { font-family: ui-monospace, monospace; color: var(--brand-deep
       <ol class="next-steps">
         <li><b>Tell us what matters most</b>Choose the areas you most want help with.</li>
         <li><b>Tell us what you're hoping for</b>Share what meaningful progress would look like.</li>
-        <li><b>Help us see the full picture</b>Complete our developmental and health assessment.</li>
+        <li><b>Help us see the full picture</b>Answer our questions about development and health.</li>
       </ol>
       <p class="next-steps-foot">About 20 minutes &middot; Saves automatically as you go</p>
     </div>
@@ -11578,7 +12432,7 @@ footer.foot code { font-family: ui-monospace, monospace; color: var(--brand-deep
     </div>
 
     <div class="welcome-card scale-card">
-      <div class="welcome-group-title">Scoring scale</div>
+      <div class="welcome-group-title">How to answer</div>
       <p class="scale-lede">Choose the answer that best describes how much each item applies to your child. For behaviors or symptoms, think about how often you see it. For abilities or characteristics, think about how strongly it describes your child.</p>
       <div class="scale-legend">
         <div class="scale-step"><span class="scale-dot s0"></span><b>0</b>Never<small>Doesn't apply</small></div>
@@ -11587,12 +12441,12 @@ footer.foot code { font-family: ui-monospace, monospace; color: var(--brand-deep
         <div class="scale-step"><span class="scale-dot s3"></span><b>3</b>Often<small>Weekly, or moderate</small></div>
         <div class="scale-step"><span class="scale-dot s4"></span><b>4</b>Always<small>Daily, or severe</small></div>
       </div>
-      <p class="scale-note">If you genuinely don't know, pick <em>Unsure</em> and we'll skip it in scoring.</p>
+      <p class="scale-note">If you genuinely don't know, pick <em>Unsure</em> and we'll leave it out.</p>
       <p class="scale-note"><em>If you need to stop:</em> your answers save as you go, so you can close the page and come back. They are kept for <strong>3 days</strong>, on <strong>this device and browser only</strong>, so reopen the link on the same device to pick up where you left off.</p>
       <div class="onb-actions">
         <button class="button-secondary" id="intro-back">Back</button>
         <span class="onb-hint">Section 1 of 13 starts next.</span>
-        <button class="button-primary" id="intro-begin">Begin Assessment <span>&rarr;</span></button>
+        <button class="button-primary" id="intro-begin">Begin questions <span>&rarr;</span></button>
       </div>
     </div>
   </div>
@@ -11633,7 +12487,7 @@ footer.foot code { font-family: ui-monospace, monospace; color: var(--brand-deep
 <section class="screen" id="screen-processing">
   <div class="processing-hero">
     <span class="tag">Submitting</span>
-    <h2 class="display-l" style="margin-top: 24px;">Building <em>your child's</em> profile</h2>
+    <h2 class="display-l" style="margin-top: 24px;">Almost done</h2>
     <div class="processing-spinner"></div>
     <p class="processing-status" id="processing-status">Reviewing your answers...</p>
   </div>
@@ -11642,19 +12496,35 @@ footer.foot code { font-family: ui-monospace, monospace; color: var(--brand-deep
 <section class="screen" id="screen-thanks">
   <div class="thanks-band">
   <div class="thanks-hero">
-    <div class="thanks-check" id="thanks-check">&#10003;</div>
-    <h1 class="display-l" id="thanks-title">Thank you.</h1>
-    <p class="thanks-message" id="thanks-message">Your intake has been submitted.</p>
-    <p class="thanks-note" id="thanks-note">You can close this page. Your intake has been submitted. If you need to change anything, contact Dr. Kyle's team.</p>
-    <div class="thanks-actions">
-      <button class="button-secondary" id="thanks-review">Review my answers (read-only)</button>
-      <a class="button-secondary" href="index.html">Back to homepage</a>
+    <div class="thanks-main">
+      <div class="thanks-check" id="thanks-check">&#10003;</div>
+      <h1 class="display-l" id="thanks-title">Thank you.</h1>
+      <p class="thanks-message" id="thanks-message">Your intake has been submitted.</p>
+      <div class="thanks-actions">
+        <button class="button-secondary" id="thanks-review">Review my answers (read-only)</button>
+      </div>
     </div>
+    <!-- Next-step panel. renderThanks hides this on the failure branch.
+         The source design gave thanks-cta-line and thanks-book ids; both were
+         referenced by no JS, so they are dropped and the styling hangs off
+         classes. thanks-next keeps its id because renderThanks reads it. -->
+    <aside class="thanks-next" id="thanks-next">
+      <span class="thanks-next-label">Next step</span>
+      <h2 class="thanks-next-title">Book your plan call.</h2>
+      <p class="thanks-cta-line">Dr. Kyle's team walks you through your child's plan and answers whatever you want to ask.</p>
+      <a class="button-primary" href="book-my-call" data-journey-preview="booking calendar removed">Book my call</a>
+    </aside>
+    <!-- Third grid child, not a child of .thanks-main. On desktop it lands in
+         row 2 column 1, i.e. directly under the actions, exactly where it was.
+         On mobile the single column follows DOM order, so the stack ends
+         check / title / message / review button / CTA / note - the CTA is the
+         thing a family can act on rather than the dead-end note. -->
+    <p class="thanks-note" id="thanks-note">Need to change something? Contact Dr. Kyle's team.</p>
   </div>
   </div>
 </section>
 <footer class="foot">
-  <p>NeuroHome &middot; Child Assessment &middot; Form <code>v1.7.0</code> &middot; Engine <code>v1.3.2</code> &middot; 121 questions across 12 phenotypes</p>
+  <p>NeuroHome &middot; Child Assessment &middot; Form <code>v1.7.0</code> &middot; Engine <code>v1.3.2</code> &middot; 121 questions across 13 sections</p>
 </footer>
 <script>
 // =====================================================
@@ -13243,19 +14113,22 @@ function renderThanks(r, succeeded) {
   const title = document.getElementById('thanks-title');
   const message = document.getElementById('thanks-message');
   const note = document.getElementById('thanks-note');
+  const nextPanel = document.getElementById('thanks-next');
   const reviewBtn = document.getElementById('thanks-review');
   if (succeeded) {
     check.textContent = '\u2713';
     check.classList.remove('error');
     title.textContent = 'Thank you.';
-    message.textContent = "Your intake has been submitted. Dr. Kyle's team will read everything you shared and use it to build your child's plan: what we would do, who you would work with, and what it costs. They will be in touch to walk you through it.";
+    message.textContent = "Your intake has been submitted. Dr. Kyle's team will read everything you shared and use it to build your child's plan: what we would do, who you would work with, and what it costs.";
+    nextPanel.style.display = '';
     note.style.display = '';
     reviewBtn.textContent = 'Review my answers (read-only)';
   } else {
     check.textContent = '!';
     check.classList.add('error');
     title.textContent = "We couldn't submit your intake";
-    message.textContent = "We weren't able to submit your intake just now. Please try again, and if it keeps happening, contact Dr. Kyle's team at jrichardson@neurosagehub.com and we'll help you directly.";
+    message.textContent = "We weren't able to submit your intake just now. Please try again, and if it keeps happening, contact Dr. Kyle's team at hello@mail.neurohome.app and we'll help you directly.";
+    nextPanel.style.display = 'none';
     note.style.display = 'none';
     reviewBtn.textContent = 'Return to my intake';
   }
@@ -14620,7 +15493,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 </html></template>
 
 <script>
-var STAGES = [{"id":"landing","n":1,"name":"Landing page","note":"Top of the site: nav and hero."},{"id":"start","n":2,"name":"Web form","note":"start.html. Fill it in and submit, or skip ahead."},{"id":"thankyou","n":3,"name":"Thank you","note":"What a family sees after the lead form."},{"id":"funnel","n":4,"name":"The funnel","note":"The 10-day nurture sequence. Every touch drives the intake."},{"id":"intake","n":5,"name":"Intake form","note":"121 questions across 12 sections, plus history. Filled in for one family, still editable."},{"id":"submitted","n":6,"name":"Intake submitted","note":"What a family sees after sending the intake. Review my answers opens the read-only view."},{"id":"email","n":7,"name":"The email","note":"What arrives in the inbox. The attachment opens the letter."},{"id":"results","n":8,"name":"Leo-intake-summary","note":"The seven page summary, sent as the PDF attachment."},{"id":"checkout","n":9,"name":"Checkout","note":"Choose a program, add to it, see the total. No payment step is connected."}];
+var STAGES = [{"id":"landing","n":1,"name":"Landing page","note":"Top of the site: nav and hero."},{"id":"start","n":2,"name":"Web form","note":"start.html. Fill it in and submit, or skip ahead."},{"id":"thankyou","n":3,"name":"Thank you","note":"What a family sees after the lead form."},{"id":"funnel","n":4,"name":"The funnel","note":"The 10-day nurture sequence. Every touch drives the intake."},{"id":"intake","n":5,"name":"Intake form","note":"121 questions across 12 sections, plus history. Filled in for one family, still editable."},{"id":"submitted","n":6,"name":"Intake submitted","note":"What a family sees after sending the intake. Book my call is the next step, live-looking but inert here. Review my answers opens the read-only view."},{"id":"email","n":7,"name":"The email","note":"What arrives in the inbox. The attachment opens the letter."},{"id":"results","n":8,"name":"Leo-intake-summary","note":"The seven page summary, sent as the PDF attachment."},{"id":"checkout","n":9,"name":"Checkout","note":"Choose a program, add to it, see the total. No payment step is connected."}];
 var frame = document.getElementById('stage');
 var stepsEl = document.getElementById('steps');
 var i = 0;
